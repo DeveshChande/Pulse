@@ -549,6 +549,8 @@ void parseDebugDirectory64(FILE* file, struct _IMAGE_OPTIONAL_HEADER64 optionalH
 void parseBaseRelocations32(FILE* file, struct _IMAGE_OPTIONAL_HEADER32 optionalHeader32, u_int16_t numberOfSections, struct _SECTION_HEADER sectionHeader[], struct _IMAGE_COFF_HEADER coffHeader, struct _IMAGE_DOS_HEADER dosHeader, bool consoleOutput);
 void parseBaseRelocations64(FILE* file, struct _IMAGE_OPTIONAL_HEADER64 optionalHeader64, u_int16_t numberOfSections, struct _SECTION_HEADER sectionHeader64[], struct _IMAGE_COFF_HEADER coffHeader, struct _IMAGE_DOS_HEADER dosHeader, bool consoleOutput);
 void parseLoadConfig32(FILE* file, struct _IMAGE_OPTIONAL_HEADER32 optionalHeader32, u_int16_t numberOfSections, struct _SECTION_HEADER sectionHeader[], struct _IMAGE_COFF_HEADER coffHeader, struct _IMAGE_DOS_HEADER dosHeader, bool consoleOutput);
+void parseTLSDirectory32(FILE* file, struct _IMAGE_OPTIONAL_HEADER32 optionalHeader32, u_int16_t numberOfSections, struct _SECTION_HEADER sectionHeader32[], struct _IMAGE_COFF_HEADER coffHeader, struct _IMAGE_DOS_HEADER dosHeader, bool consoleOutput);
+void parseTLSDirectory64(FILE* file, struct _IMAGE_OPTIONAL_HEADER64 optionalHeader64, u_int16_t numberOfSections, struct _SECTION_HEADER sectionHeader64[], struct _IMAGE_COFF_HEADER coffHeader, struct _IMAGE_DOS_HEADER dosHeader, bool consoleOutput);
 void parseLoadConfig64(FILE* file, struct _IMAGE_OPTIONAL_HEADER64 optionalHeader64, u_int16_t numberOfSections, struct _SECTION_HEADER sectionHeader64[], struct _IMAGE_COFF_HEADER coffHeader, struct _IMAGE_DOS_HEADER dosHeader, bool consoleOutput);
 void consoleOutput32(struct _IMAGE_DOS_HEADER dosHeader, struct _IMAGE_COFF_HEADER coffHeader, struct _IMAGE_OPTIONAL_HEADER32 optionalHeader32, struct _SECTION_HEADER sectionHeader32[], FILE* file);
 void consoleOutput64(struct _IMAGE_DOS_HEADER dosHeader, struct _IMAGE_COFF_HEADER coffHeader, struct _IMAGE_OPTIONAL_HEADER64 optionalHeader64, struct _SECTION_HEADER sectionHeader64[], FILE* file);
@@ -1248,17 +1250,17 @@ void consoleOutput32(struct _IMAGE_DOS_HEADER dosHeader, struct _IMAGE_COFF_HEAD
     bool consoleOutput = true;
 
     if(optionalHeader32.dataDirectory[0].virtualAddress != 0){
-        printf("[Exports]\n--------------------\n");
+        printf("\n\n[Exports]\n--------------------\n");
         parseExportDirectory32(file, optionalHeader32, numberOfSections, sectionHeader32, consoleOutput);
     }
 
     if(optionalHeader32.dataDirectory[1].virtualAddress != 0){
-        printf("[Imports]\n--------------------\n");
+        printf("\n\n[Imports]\n--------------------\n");
         parseImportDirectory32(file, optionalHeader32, numberOfSections, sectionHeader32, consoleOutput);
     }
 
     if(optionalHeader32.dataDirectory[2].virtualAddress != 0){
-        printf("[Resources]\n--------------------\n");
+        printf("\n\n[Resources]\n--------------------\n");
         parseResourceDirectory32(file, optionalHeader32, numberOfSections, sectionHeader32, coffHeader, dosHeader, consoleOutput); 
     }
 
@@ -1270,6 +1272,11 @@ void consoleOutput32(struct _IMAGE_DOS_HEADER dosHeader, struct _IMAGE_COFF_HEAD
     if(optionalHeader32.dataDirectory[6].virtualAddress != 0){
         printf("\n\n[Debug Information]\n\n");
         parseDebugDirectory32(file, optionalHeader32, numberOfSections, sectionHeader32, consoleOutput);
+    }
+
+    if(optionalHeader32.dataDirectory[9].virtualAddress != 0){
+        printf("\n\n[TLS]\n--------------------\n");
+        parseTLSDirectory32(file, optionalHeader32, numberOfSections, sectionHeader32, coffHeader, dosHeader, consoleOutput);
     }
 
     if(optionalHeader32.dataDirectory[10].virtualAddress != 0){
@@ -1435,6 +1442,11 @@ void consoleOutput64(struct _IMAGE_DOS_HEADER dosHeader, struct _IMAGE_COFF_HEAD
     if(optionalHeader64.dataDirectory[6].virtualAddress != 0){
         printf("\n[Debug Information]\n--------------------\n");
         parseDebugDirectory64(file, optionalHeader64, numberOfSections, sectionHeader64, consoleOutput);
+    }
+
+    if(optionalHeader64.dataDirectory[9].virtualAddress != 0){
+        printf("\n\n[TLS]\n--------------------\n");
+        parseTLSDirectory64(file, optionalHeader64, numberOfSections, sectionHeader64, coffHeader, dosHeader, consoleOutput);
     }
 
     if(optionalHeader64.dataDirectory[10].virtualAddress != 0){
@@ -1851,7 +1863,7 @@ void parseExportDirectory64(FILE* file, struct _IMAGE_OPTIONAL_HEADER64 optional
             nameRVAArray[i] = convertRelativeAddressToDiskOffset(reverse_endianess_u_int32_t(readDWord(file, addressOfNamesOffset+i*4, DWORD_Buffer)), numberOfSections, sectionHeader);
             u_int32_t exportedFunctionNameRVA = nameRVAArray[i];
             u_int8_t functionLetter = reverse_endianess_u_int8_t(readByte(file, exportedFunctionNameRVA, BYTE_Buffer));
-
+            printf("\t");
             while(functionLetter != 0){
                     printf("%c", functionLetter);
                     exportedFunctionNameRVA+=1;
@@ -1863,13 +1875,14 @@ void parseExportDirectory64(FILE* file, struct _IMAGE_OPTIONAL_HEADER64 optional
         u_int32_t addressOfFunctionsOffset = convertRelativeAddressToDiskOffset(reverse_endianess_u_int32_t(exportDataDirectory.addressOfFunctions), numberOfSections, sectionHeader);
         u_int32_t functionRVAArray[reverse_endianess_u_int32_t(exportDataDirectory.numberOfFunctions)];
 
+        printf("\n[Forwarded Exports]\n------------------------\n");
         for(size_t i=0; i<reverse_endianess_u_int32_t(exportDataDirectory.numberOfFunctions);i++){
             functionRVAArray[i] = reverse_endianess_u_int32_t(readDWord(file, addressOfFunctionsOffset+i*4, DWORD_Buffer));
             
             if((exportDirectoryTableOffset2 < functionRVAArray[i]) && (functionRVAArray[i] < (exportDirectoryTableOffset2 + exportDirectorySize))){
                 u_int32_t forwardedFunctionNameRVA = convertRelativeAddressToDiskOffset(functionRVAArray[i], numberOfSections, sectionHeader);
                 u_int8_t functionLetter = reverse_endianess_u_int8_t(readByte(file, forwardedFunctionNameRVA, BYTE_Buffer));
-
+                printf("\t");
                 while(functionLetter != 0){
                     printf("%c", functionLetter);
                     forwardedFunctionNameRVA+=1;
@@ -2561,6 +2574,8 @@ void parseTLSDirectory32(FILE* file, struct _IMAGE_OPTIONAL_HEADER32 optionalHea
             ,imagetlsdirectory32[i].sizeOfZeroFill, imagetlsdirectory32[i].characteristics
         );
 
+        imagetlsdirectory32 = realloc(imagetlsdirectory32, (i+1)*sizeof(struct _IMAGE_TLS_DIRECTORY32*));
+
         imagetlsdirectory32[i].startAddressOfRawData = readDWord(file, tlsOffset, DWORD_Buffer);
         imagetlsdirectory32[i].endAddressOfRawData = readDWord(file, tlsOffset+4, DWORD_Buffer);
         imagetlsdirectory32[i].addressOfIndex = readDWord(file, tlsOffset+8, DWORD_Buffer);
@@ -2606,6 +2621,8 @@ void parseTLSDirectory64(FILE* file, struct _IMAGE_OPTIONAL_HEADER64 optionalHea
             ,imagetlsdirectory64[i].addressOfIndex, imagetlsdirectory64[i].addressOfCallBacks
             ,imagetlsdirectory64[i].sizeOfZeroFill, imagetlsdirectory64[i].characteristics
         );
+
+        imagetlsdirectory64 = realloc(imagetlsdirectory64, (i+1)*sizeof(struct _IMAGE_TLS_DIRECTORY32*));
 
         imagetlsdirectory64[i].startAddressOfRawData = readQWord(file, tlsOffset, QWORD_Buffer);
         imagetlsdirectory64[i].endAddressOfRawData = readQWord(file, tlsOffset+8, QWORD_Buffer);
