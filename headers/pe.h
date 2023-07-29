@@ -1537,7 +1537,7 @@ void parseImportDirectory32(FILE* file, struct _IMAGE_OPTIONAL_HEADER32 optional
     u_int8_t* BYTE_Buffer = calloc(1, sizeof(u_int8_t));
     u_int32_t* DWORD_Buffer = calloc(4, sizeof(u_int8_t));
     u_int32_t importDescriptorOffset = convertRelativeAddressToDiskOffset(reverse_endianess_u_int32_t(optionalHeader32.dataDirectory[1].virtualAddress), numberOfSections, sectionHeader);
-    struct _IMAGE_IMPORT_DESCRIPTOR32* importDescriptorArray = malloc(sizeof(struct _IMAGE_IMPORT_DESCRIPTOR32*));
+    struct _IMAGE_IMPORT_DESCRIPTOR32* importDescriptorArray = malloc(sizeof(struct _IMAGE_IMPORT_DESCRIPTOR32));
     
     if(consoleOutput){    
         bool readAllImportDescriptors = false;
@@ -1566,13 +1566,13 @@ void parseImportDirectory32(FILE* file, struct _IMAGE_OPTIONAL_HEADER32 optional
             }
             printf("]\n");
 
-            struct _IMAGE_THUNK_DATA32* originalFirstThunkArray = malloc(sizeof(struct _IMAGE_THUNK_DATA32*));
+            struct _IMAGE_THUNK_DATA32* originalFirstThunkArray = malloc(sizeof(struct _IMAGE_THUNK_DATA32));
             u_int32_t originalFirstThunkArrayOffset = convertRelativeAddressToDiskOffset(reverse_endianess_u_int32_t(importDescriptorArray[i].u.OriginalFirstThunk.u1.ordinal), numberOfSections, sectionHeader);
             size_t j=0;
             originalFirstThunkArray[j].u1.ordinal = reverse_endianess_u_int32_t(readDWord(file, originalFirstThunkArrayOffset, DWORD_Buffer));
             while((originalFirstThunkArray[j].u1.ordinal != 0)){
                 j++;
-                originalFirstThunkArray = realloc(originalFirstThunkArray, (j+1)*sizeof(struct _IMAGE_THUNK_DATA32*));
+                originalFirstThunkArray = realloc(originalFirstThunkArray, (j+1)*sizeof(struct _IMAGE_THUNK_DATA32));
                 originalFirstThunkArrayOffset = originalFirstThunkArrayOffset+4;
                 originalFirstThunkArray[j].u1.ordinal = reverse_endianess_u_int32_t(readDWord(file, originalFirstThunkArrayOffset, DWORD_Buffer));
             }
@@ -1598,7 +1598,7 @@ void parseImportDirectory32(FILE* file, struct _IMAGE_OPTIONAL_HEADER32 optional
             
             printf("\n");
             i++;
-            importDescriptorArray = realloc(importDescriptorArray, (i+1)*sizeof(struct _IMAGE_IMPORT_DESCRIPTOR32*));
+            importDescriptorArray = realloc(importDescriptorArray, (i+1)*sizeof(struct _IMAGE_IMPORT_DESCRIPTOR32));
         }
     }
     free(BYTE_Buffer);
@@ -1616,7 +1616,7 @@ void parseImportDirectory64(FILE* file, struct _IMAGE_OPTIONAL_HEADER64 optional
         bool readAllImportDescriptors = false;
         size_t i=0;
 
-        struct _IMAGE_IMPORT_DESCRIPTOR64* importDescriptorArray = malloc(sizeof(struct _IMAGE_IMPORT_DESCRIPTOR64*));
+        struct _IMAGE_IMPORT_DESCRIPTOR64* importDescriptorArray = malloc(sizeof(struct _IMAGE_IMPORT_DESCRIPTOR64));
         while(!readAllImportDescriptors){
             
             importDescriptorArray[i].u.OriginalFirstThunk.u1.ordinal = readDWord(file, importDescriptorOffset+i*20, DWORD_Buffer);
@@ -1640,7 +1640,7 @@ void parseImportDirectory64(FILE* file, struct _IMAGE_OPTIONAL_HEADER64 optional
             }
             printf("]\n");       
 
-            struct _IMAGE_THUNK_DATA64* originalFirstThunkArray = malloc(sizeof(struct _IMAGE_THUNK_DATA64*));
+            struct _IMAGE_THUNK_DATA64* originalFirstThunkArray = malloc(sizeof(struct _IMAGE_THUNK_DATA64));
             
             u_int32_t originalFirstThunkArrayOffset = convertRelativeAddressToDiskOffset(reverse_endianess_u_int32_t(importDescriptorArray[i].u.OriginalFirstThunk.u1.ordinal), numberOfSections, sectionHeader);
             size_t originalFirstThunkArrayIndex=0;
@@ -1650,7 +1650,7 @@ void parseImportDirectory64(FILE* file, struct _IMAGE_OPTIONAL_HEADER64 optional
             while(originalFirstThunkArray[originalFirstThunkArrayIndex].u1.ordinal != 0){
                 numberOfFunctions++;
                 originalFirstThunkArrayIndex++;
-                originalFirstThunkArray = realloc(originalFirstThunkArray, (originalFirstThunkArrayIndex+1)*sizeof(struct _IMAGE_THUNK_DATA64*));
+                originalFirstThunkArray = realloc(originalFirstThunkArray, (originalFirstThunkArrayIndex+1)*sizeof(struct _IMAGE_THUNK_DATA64));
                 originalFirstThunkArrayOffset += sizeof(QWORD);
                 originalFirstThunkArray[originalFirstThunkArrayIndex].u1.ordinal = reverse_endianess_u_int64_t(readQWord(file, originalFirstThunkArrayOffset, QWORD_Buffer));
             }
@@ -1674,7 +1674,7 @@ void parseImportDirectory64(FILE* file, struct _IMAGE_OPTIONAL_HEADER64 optional
             
             printf("\n");
             i++;
-            importDescriptorArray = realloc(importDescriptorArray, (i+1)*sizeof(struct _IMAGE_IMPORT_DESCRIPTOR64*));
+            importDescriptorArray = realloc(importDescriptorArray, (i+1)*sizeof(struct _IMAGE_IMPORT_DESCRIPTOR64));
         }
     }
     free(BYTE_Buffer);
