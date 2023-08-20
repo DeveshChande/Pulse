@@ -1,9 +1,20 @@
 # Pulse
+
 Pulse is a utility for parsing Portable Executables, written in C.
 
-### Usage
+It is built for conducting static analysis - cataloging structural information and empowering analytic capabilities.
 
-1. ```git clone https://github.com/DeveshChande/Pulse.git```
-2. ```cd Pulse```
-3. ```gcc main.c -Wall -I ./headers/ -o pulse```
-4. ```./pulse -f /path_to_file```
+
+## Installation
+
+To get started, simply clone the repository and build the utility via _make_.
+
+`git clone https://github.com/DeveshChande/Pulse.git`
+
+`make`
+
+`pulse [options] [file]`
+
+## Options
+
+`--path` : Specify the file path of the Portable Executable to be parsed.
