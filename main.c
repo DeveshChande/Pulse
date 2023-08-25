@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <headers/pe32.h>
+#include <headers/pe64.h>
 
 int main(int argc, char* argv[]){
     clock_t t = clock();
