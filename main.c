@@ -91,7 +91,7 @@ int main(int argc, char* argv[]){
                 parsePE32(pefile, psList);
                 break;
             case 0x20b:
-                printf("Write parsePE64().\n"); //parsePE64(pefile, psList);
+                parsePE64(pefile, psList);
                 break;
             default:
                 printf("ERROR: Unsupported type of image.\n\n");
