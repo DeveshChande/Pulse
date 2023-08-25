@@ -1876,7 +1876,7 @@ void parsePE64(FILE* pefile, struct switchList* psList){
     	baseReloc64 = malloc(baseRelocCount * sizeof(struct IMAGE_BASE_RELOCATION32));
 
     	parseBaseReloc64(pefile, diskOffset, baseRelocCount, baseReloc64);
-    	baseRelocConsoleOutput32(pefile, diskOffset, baseRelocCount, baseReloc64);
+    	baseRelocConsoleOutput64(pefile, diskOffset, baseRelocCount, baseReloc64);
     	free(baseReloc64);
     }
     
