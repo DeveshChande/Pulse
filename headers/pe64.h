@@ -1158,17 +1158,24 @@ void baseRelocConsoleOutput64(FILE* pefile, uint32_t diskOffset, size_t baseRelo
         printf("---------------------------\n");
         uint16_t fourbitValue = 0;
         uint16_t twelvebitValue = 0;
-        //+baseReloc32[i].pageRVA
-        
 
         while(typeCount--){
             fourbitValue = (reverse_endianess_uint16_t(readWord(pefile, diskOffset, WORD_Buffer)) >> 12);
             twelvebitValue = (reverse_endianess_uint16_t(readWord(pefile, diskOffset, WORD_Buffer)) & 0x0FFF);
-            printf(
-            "\t[type: 0x%02x\t(%s)]"
-            "\taddress: 0x%04x\n"
-            ,(fourbitValue), baseRelocTypes[fourbitValue] , (uint32_t)(twelvebitValue)+baseReloc64[i].pageRVA
-            );
+            if(fourbitValue < 4){
+            	printf(
+                    "\t[type: 0x%02x\t(%s)]"
+                    "\taddress: 0x%04x\n"
+                    ,(fourbitValue), baseRelocTypes[fourbitValue] , (uint32_t)(twelvebitValue)+baseReloc64[i].pageRVA
+                );
+            }
+            else{
+                printf(
+                    "\t[type: 0x%02x]"
+                    "\taddress: 0x%04x\n"
+                    ,(fourbitValue), (uint32_t)(twelvebitValue)+baseReloc64[i].pageRVA
+                );
+            }
             diskOffset += sizeof(WORD);
         }
 	printf("\n");
@@ -1264,7 +1271,6 @@ void debugConsoleOutput64(FILE* pefile, size_t debugCount, uint32_t diskOffset, 
              		pdb70.pdbFileName = readByte(pefile, cvSignatureOffset++, BYTE_Buffer);
          	}
          	printf("\n");
-           	//printf("%s\n\n", debugTypes[reverse_endianess_uint32_t(debug32[i].type)]);
      	}
      	
      	printf("%s\n\n", debugTypes[reverse_endianess_uint32_t(debug64[i].type)]);
