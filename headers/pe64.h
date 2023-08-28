@@ -1113,7 +1113,7 @@ void importsConsoleOutput64(FILE* pefile, size_t numID, uint32_t diskOffset, uin
 	
 	for(size_t i=0;i<numID;i++){
 		if(!((imports64[i]->u.OriginalFirstThunk.u1.ordinal == 0) && (imports64[i]->timeDateStamp == 0) && (imports64[i]->forwarderChain == 0) && (imports64[i]->name == 0) && (imports64[i]->FirstThunk.u1.addressOfData == 0))){
-			printf("[IMPORT_DESCRIPTOR32]\n");
+			printf("[IMPORT_DESCRIPTOR64]\n");
 	    		printf("\timports64[%zu]->u.OriginalFirstThunk.u1.ordinal: %04x\n", i, imports64[i]->u.OriginalFirstThunk.u1.ordinal);
 	    		printf("\timports64[%zu]->timeDateStamp: %04x\n", i, imports64[i]->timeDateStamp);
 	    		printf("\timports64[%zu]->forwarderChain: %04x\n", i, imports64[i]->forwarderChain);
