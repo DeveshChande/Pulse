@@ -417,6 +417,19 @@ struct SECTION_HEADER64{
 };
 
 //Function declarations
+void initializeMSDOSHeader64(struct IMAGE_DOS_HEADER64* msDOSHeader64);
+void initializeCoffHeader64(struct IMAGE_COFF_HEADER64* coffHeader64);
+void initializeOptionalHeader64(struct IMAGE_OPTIONAL_HEADER64* optionalHeader64);
+void initializeSectionHeader64(uint16_t numberOfSections, struct SECTION_HEADER64* sectionHeader64);
+void initializeExportDirectory64(struct IMAGE_EXPORT_DIRECTORY64* exports64);
+void initializeImportDescriptor64(struct IMAGE_IMPORT_DESCRIPTOR64* importDescriptor);
+void initializeException64(size_t exceptionCount, struct IMAGE_EXCEPTION64* exception64);
+void initializeCertificate64(size_t certificateCount, struct IMAGE_CERTIFICATE64* certificate64);
+void initializeBaseReloc64(size_t baseRelocCount, struct IMAGE_BASE_RELOCATION64* baseReloc64);
+void initializeDebug64(size_t debugCount, struct IMAGE_DEBUG_DIRECTORY64* debug64);
+void initializeTLS64(struct IMAGE_TLS_DIRECTORY64* tls64);
+void initializeLoadConfig64(struct IMAGE_LOAD_CONFIG64* loadConfig64);
+void initializeBoundImport64(uint32_t boundsCount, struct IMAGE_BOUND_IMPORT_DESCRIPTOR64* bounds64);
 
 void parseMSDOSHeader64(FILE* pefile, struct IMAGE_DOS_HEADER64* msDOSHeader64);
 void parseCoffHeader64(FILE* pefile, uint32_t elfanew, struct IMAGE_COFF_HEADER64* coffHeader64);
@@ -482,6 +495,24 @@ size_t i=0;
 
 }
 
+void initializeMSDOSHeader64(struct IMAGE_DOS_HEADER64* msDOSHeader64){
+    msDOSHeader64->e_magic = (uint16_t)0;
+    msDOSHeader64->e_cblp = (uint16_t)0;
+    msDOSHeader64->e_cp = (uint16_t)0;
+    msDOSHeader64->e_crlc = (uint16_t)0;
+    msDOSHeader64->e_cparhdr = (uint16_t)0;
+    msDOSHeader64->e_minalloc = (uint16_t)0;
+    msDOSHeader64->e_maxalloc = (uint16_t)0;
+    msDOSHeader64->e_ss = (uint16_t)0;
+    msDOSHeader64->e_sp = (uint16_t)0;
+    msDOSHeader64->e_csum = (uint16_t)0;
+    msDOSHeader64->e_ip = (uint16_t)0;
+    msDOSHeader64->e_cs = (uint16_t)0;
+    msDOSHeader64->e_lfarlc = (uint16_t)0;
+    msDOSHeader64->e_ovno = (uint16_t)0;
+
+}
+
 void parseMSDOSHeader64(FILE* pefile, struct IMAGE_DOS_HEADER64* msDOSHeader64){
     uint16_t* WORD_Buffer = calloc(2, sizeof(uint8_t));
     uint32_t* DWORD_Buffer = calloc(4, sizeof(uint8_t));
@@ -517,6 +548,18 @@ void parseMSDOSHeader64(FILE* pefile, struct IMAGE_DOS_HEADER64* msDOSHeader64){
 
     free(WORD_Buffer);
     free(DWORD_Buffer);
+}
+
+void initializeCoffHeader64(struct IMAGE_COFF_HEADER64* coffHeader64){
+
+    coffHeader64->peSignature = (uint32_t)0;
+    coffHeader64->machine = (uint16_t)0;
+    coffHeader64->numberOfSections = (uint16_t)0;
+    coffHeader64->timeDateStamp = (uint32_t)0;
+    coffHeader64->pointerToSymbolTable = (uint32_t)0;
+    coffHeader64->numberOfSymbols = (uint32_t)0;
+    coffHeader64->sizeOfOptionalHeader = (uint16_t)0;
+    coffHeader64->characteristics = (uint16_t)0;
 }
 
 void parseCoffHeader64(FILE* file, uint32_t elfanew, struct IMAGE_COFF_HEADER64* coffHeader64){
@@ -689,6 +732,42 @@ void parseCoffHeader64(FILE* file, uint32_t elfanew, struct IMAGE_COFF_HEADER64*
     free(DWORD_Buffer);
 }
 
+
+void initializeOptionalHeader64(struct IMAGE_OPTIONAL_HEADER64* optionalHeader64){
+
+    optionalHeader64->magic = (uint16_t)0;
+    optionalHeader64->majorLinkerVersion = (uint8_t)0;
+    optionalHeader64->minorLinkerVersion = (uint8_t)0;
+    optionalHeader64->sizeOfCode = (uint32_t)0;
+    optionalHeader64->sizeOfInitializedData = (uint32_t)0;
+    optionalHeader64->sizeOfUninitializedData = (uint32_t)0;
+    optionalHeader64->addressOfEntryPoint = (uint32_t)0;
+    optionalHeader64->baseOfCode = (uint32_t)0;
+
+    optionalHeader64->imageBase = (uint64_t)0;
+    optionalHeader64->sectionAlignment = (uint64_t)0;
+    optionalHeader64->fileAlignment = (uint64_t)0;
+    optionalHeader64->majorOperatingSystemVersion = (uint16_t)0;
+    optionalHeader64->minorOperatingSystemVersion = (uint16_t)0;
+    optionalHeader64->majorImageVersion = (uint16_t)0;
+    optionalHeader64->minorImageVersion = (uint16_t)0;
+    optionalHeader64->majorSubsystemVersion = (uint16_t)0;
+    optionalHeader64->minorSubsystemVersion = (uint16_t)0;
+    optionalHeader64->win32VersionValue = (uint32_t)0;
+    optionalHeader64->sizeOfImage = (uint32_t)0;
+    optionalHeader64->sizeOfHeaders = (uint32_t)0;
+    optionalHeader64->checksum = (uint32_t)0;
+    optionalHeader64->subsystem = (uint16_t)0;
+    optionalHeader64->dllCharacteristics = (uint16_t)0;
+    optionalHeader64->sizeOfStackReserve = (uint64_t)0;
+    optionalHeader64->sizeOfStackCommit = (uint64_t)0;
+    optionalHeader64->sizeOfHeapReserve = (uint64_t)0;
+    optionalHeader64->sizeOfHeapCommit = (uint64_t)0;
+    optionalHeader64->loaderFlags = (uint32_t)0;
+    optionalHeader64->numberOfRvaAndSizes = (uint32_t)0;
+
+}
+
 void parseOptionalHeader64(FILE* pefile, uint32_t elfanew, struct IMAGE_OPTIONAL_HEADER64* optionalHeader64){
     uint8_t* BYTE_Buffer = calloc(1, sizeof(uint8_t));
     uint16_t* WORD_Buffer = calloc(2, sizeof(uint8_t));
@@ -843,6 +922,23 @@ void parseOptionalHeader64(FILE* pefile, uint32_t elfanew, struct IMAGE_OPTIONAL
     free(QWORD_Buffer);
 }
 
+
+void initializeSectionHeader64(uint16_t numberOfSections, struct SECTION_HEADER64* sectionHeader64){
+
+    for(size_t i=0; i<numberOfSections; i++){
+        sectionHeader64[i].name = (uint64_t)0;
+        sectionHeader64[i].virtualSize = (uint32_t)0;
+        sectionHeader64[i].virtualAddress = (uint32_t)0;
+        sectionHeader64[i].sizeOfRawData = (uint32_t)0;
+        sectionHeader64[i].pointerToRawData = (uint32_t)0;
+        sectionHeader64[i].pointerToRelocations = (uint32_t)0;
+        sectionHeader64[i].pointerToLineNumbers = (uint32_t)0;
+        sectionHeader64[i].numberOfRelocations = (uint16_t)0;
+        sectionHeader64[i].numberOfLineNumbers = (uint16_t)0;
+        sectionHeader64[i].characteristics = (uint32_t)0;
+    }
+}
+
 void parseSectionHeaders64(FILE* pefile, uint16_t numberOfSections, uint32_t memoryOffset, struct SECTION_HEADER64* sectionHeader64){
 
     uint16_t* WORD_Buffer = calloc(2, sizeof(uint8_t));
@@ -865,6 +961,21 @@ void parseSectionHeaders64(FILE* pefile, uint16_t numberOfSections, uint32_t mem
     free(WORD_Buffer);
     free(DWORD_Buffer);
     free(QWORD_Buffer);
+}
+
+
+void initializeExportDirectory64(struct IMAGE_EXPORT_DIRECTORY64* exports64){
+    exports64->characteristics = (uint32_t)0;
+    exports64->timeDateStamp = (uint32_t)0;
+    exports64->majorVersion = (uint16_t)0;
+    exports64->minorVersion = (uint16_t)0;
+    exports64->name = (uint32_t)0;
+    exports64->base = (uint32_t)0;
+    exports64->numberOfFunctions = (uint32_t)0;
+    exports64->numberOfNames = (uint32_t)0;
+    exports64->addressOfFunctions = (uint32_t)0;
+    exports64->addressOfNames = (uint32_t)0;
+    exports64->addressOfOrdinals = (uint32_t)0;
 }
 
 void parseExports64(FILE* pefile, uint32_t diskOffset, uint16_t numberOfSections, struct SECTION_HEADER64* sectionHeader64, struct IMAGE_EXPORT_DIRECTORY64* exports64, uint32_t* exportFunctionAddresses, uint32_t* exportFunctionNames, uint16_t* exportOrdinalAddresses){
@@ -967,6 +1078,15 @@ void exportsConsoleOutput64(FILE* pefile, struct IMAGE_OPTIONAL_HEADER64* option
         free(BYTE_Buffer);
 }
 
+void initializeImportDescriptor64(struct IMAGE_IMPORT_DESCRIPTOR64* importDescriptor){
+
+        importDescriptor->u.OriginalFirstThunk.u1.ordinal = (uint32_t)0;
+    	importDescriptor->timeDateStamp = (uint32_t)0;
+    	importDescriptor->forwarderChain = (uint32_t)0;
+    	importDescriptor->name = (uint32_t)0;
+    	importDescriptor->FirstThunk.u1.addressOfData = (uint32_t)0;
+}
+
 void parseImports64(FILE* pefile, size_t numID, uint32_t diskOffset, uint16_t numberOfSections, struct SECTION_HEADER64* sectionHeader64, struct IMAGE_IMPORT_DESCRIPTOR64** imports64){
     
     uint32_t* DWORD_Buffer = calloc(4, sizeof(uint8_t));
@@ -1059,6 +1179,15 @@ void importsConsoleOutput64(FILE* pefile, size_t numID, uint32_t diskOffset, uin
 
 }
 
+void initializeException64(size_t exceptionCount, struct IMAGE_EXCEPTION64* exception64){
+    
+    for(size_t i=0;i<exceptionCount;i++){
+    	exception64[i].startAddress = (uint32_t)0;
+    	exception64[i].endAddress = (uint32_t)0;
+    	exception64[i].unwindAddress = (uint32_t)0;
+    }
+}
+
 void parseException64(FILE* pefile, uint32_t diskOffset, size_t exceptionCount, struct IMAGE_EXCEPTION64* exception64){
     uint32_t* DWORD_Buffer = calloc(4, sizeof(uint8_t));
     
@@ -1084,6 +1213,15 @@ void exceptionConsoleOutput64(FILE* pefile, uint32_t diskOffset, size_t exceptio
 
 	printf("\n");
 
+}
+
+void initializeCertificate64(size_t certificateCount, struct IMAGE_CERTIFICATE64* certificate64){
+
+    for(size_t i=0;i<certificateCount;i++){    
+            certificate64[i].dwLength = (uint32_t)0;
+            certificate64[i].wRevision = (uint16_t)0;
+            certificate64[i].wCertificateType = (uint16_t)0;
+    }
 }
 
 void parseCertificate64(FILE* pefile, uint32_t diskOffset, size_t certificateCount, struct IMAGE_CERTIFICATE64* certificate64, struct IMAGE_OPTIONAL_HEADER64* optionalHeader64){
@@ -1120,6 +1258,14 @@ void certificateConsoleOutput64(FILE* pefile, size_t certificateCount, struct IM
     printf("\n\n");
 }
 
+void initializeBaseReloc64(size_t baseRelocCount, struct IMAGE_BASE_RELOCATION64* baseReloc64){
+
+    for(size_t i=0;i<baseRelocCount;i++){
+        baseReloc64[i].pageRVA = (uint32_t)0;
+        baseReloc64[i].blockSize = (uint32_t)0;
+    }
+
+}
 
 void parseBaseReloc64(FILE* pefile, uint32_t diskOffset, size_t baseRelocCount, struct IMAGE_BASE_RELOCATION64* baseReloc64){
 
@@ -1185,6 +1331,20 @@ void baseRelocConsoleOutput64(FILE* pefile, uint32_t diskOffset, size_t baseRelo
 
     free(WORD_Buffer);
     free(DWORD_Buffer);
+}
+
+void initializeDebug64(size_t debugCount, struct IMAGE_DEBUG_DIRECTORY64* debug64){
+    
+    for(size_t i=0;i<debugCount;i++){
+    	debug64[i].characteristics = (uint32_t)0;
+        debug64[i].timeDateStamp = (uint32_t)0;
+        debug64[i].majorVersion = (uint16_t)0;
+        debug64[i].minorVersion = (uint16_t)0;
+        debug64[i].type = (uint32_t)0;
+        debug64[i].sizeOfData = (uint32_t)0;
+        debug64[i].addressOfRawData = (uint32_t)0;
+        debug64[i].pointerToRawData = (uint32_t)0;
+    }
 }
 
 void parseDebug64(FILE* pefile, size_t debugCount, uint32_t diskOffset, struct IMAGE_DEBUG_DIRECTORY64* debug64){
@@ -1283,6 +1443,16 @@ void debugConsoleOutput64(FILE* pefile, size_t debugCount, uint32_t diskOffset, 
 
 }
 
+void initializeTLS64(struct IMAGE_TLS_DIRECTORY64* tls64){
+
+    tls64->startAddressOfRawData = (uint64_t)0;
+    tls64->endAddressOfRawData = (uint64_t)0;
+    tls64->addressOfIndex = (uint64_t)0;
+    tls64->addressOfCallBacks = (uint64_t)0;
+    tls64->sizeOfZeroFill = (uint32_t)0;
+    tls64->characteristics = (uint32_t)0;
+}
+
 void parseTLS64(FILE* pefile, uint32_t diskOffset, struct IMAGE_TLS_DIRECTORY64* tls64){
 	uint32_t* DWORD_Buffer = calloc(4, sizeof(uint8_t));
 	uint64_t* QWORD_Buffer = calloc(8, sizeof(uint8_t));
@@ -1310,6 +1480,42 @@ void tlsConsoleOutput64(FILE* pefile, uint32_t diskOffset, struct IMAGE_TLS_DIRE
 
 }
 
+void initializeLoadConfig64(struct IMAGE_LOAD_CONFIG64* loadConfig64){
+
+        loadConfig64->characteristics = (uint32_t)0;
+    	loadConfig64->timeDateStamp = (uint32_t)0;
+    	loadConfig64->majorVersion = (uint16_t)0;
+    	loadConfig64->minorVersion = (uint16_t)0;
+    	loadConfig64->globalFlagsClear = (uint32_t)0;
+    	loadConfig64->globalFlagsSet = (uint32_t)0;
+    	loadConfig64->criticalSectionDefaultTimeout = (uint32_t)0;
+    	loadConfig64->deCommitFreeBlockThreshold = (uint64_t)0;
+    	loadConfig64->deCommitTotalFreeThreshold = (uint64_t)0;
+    	loadConfig64->lockPrefixTable = (uint64_t)0;
+    	loadConfig64->maximumAllocationSize = (uint64_t)0;
+    	loadConfig64->virtualMemoryThreshold = (uint64_t)0;
+    	loadConfig64->processAffinityMask = (uint64_t)0;
+    	loadConfig64->processHeapFlags = (uint32_t)0;
+    	loadConfig64->cSDVersion = (uint16_t)0;
+    	loadConfig64->reserved = (uint16_t)0;
+    	loadConfig64->editList = (uint64_t)0;
+    	loadConfig64->securityCookie = (uint64_t)0;
+    	loadConfig64->sEHandlerTable = (uint64_t)0;
+    	loadConfig64->sEHandlerCount = (uint64_t)0;
+    	loadConfig64->guardCFCheckFunctionPointer = (uint64_t)0;
+    	loadConfig64->guardCFDispatchFunctionPointer = (uint64_t)0;
+    	loadConfig64->guardCFFunctionTable = (uint64_t)0;
+    	loadConfig64->guardCFFunctionCount = (uint64_t)0;
+    	loadConfig64->guardFlags = (uint32_t)0;
+    	loadConfig64->codeIntegrity[0] = (uint32_t)0;
+    	loadConfig64->codeIntegrity[1] = (uint32_t)0;
+    	loadConfig64->codeIntegrity[2] = (uint32_t)0;
+    	loadConfig64->guardAddressTakenIatEntryTable = (uint64_t)0;
+    	loadConfig64->guardAddressTakenIatEntryCount = (uint64_t)0;
+    	loadConfig64->guardLongJumpTargetTable = (uint64_t)0;
+    	loadConfig64->guardLongJumpTargetCount = (uint64_t)0;
+}
+
 void parseLoadConfig64(FILE* pefile, uint32_t diskOffset, struct IMAGE_LOAD_CONFIG64* loadConfig64){
 	uint16_t* WORD_Buffer = calloc(2, sizeof(uint8_t));
     	uint32_t* DWORD_Buffer = calloc(4, sizeof(uint8_t));
@@ -1331,7 +1537,6 @@ void parseLoadConfig64(FILE* pefile, uint32_t diskOffset, struct IMAGE_LOAD_CONF
     	loadConfig64->processHeapFlags = readDWord(pefile, diskOffset+72, DWORD_Buffer);
     	loadConfig64->cSDVersion = readWord(pefile, diskOffset+76, WORD_Buffer);
     	loadConfig64->reserved = readWord(pefile, diskOffset+78, WORD_Buffer);
-    	
     	loadConfig64->editList = readQWord(pefile, diskOffset+80, QWORD_Buffer);
     	loadConfig64->securityCookie = readQWord(pefile, diskOffset+88, QWORD_Buffer);
     	loadConfig64->sEHandlerTable = readQWord(pefile, diskOffset+96, QWORD_Buffer);
@@ -1340,12 +1545,10 @@ void parseLoadConfig64(FILE* pefile, uint32_t diskOffset, struct IMAGE_LOAD_CONF
     	loadConfig64->guardCFDispatchFunctionPointer = readQWord(pefile, diskOffset+120, QWORD_Buffer);
     	loadConfig64->guardCFFunctionTable = readQWord(pefile, diskOffset+128, QWORD_Buffer);
     	loadConfig64->guardCFFunctionCount = readQWord(pefile, diskOffset+136, QWORD_Buffer);
-    	
     	loadConfig64->guardFlags = readDWord(pefile, diskOffset+144, DWORD_Buffer);
     	loadConfig64->codeIntegrity[0] = readDWord(pefile, diskOffset+148, DWORD_Buffer);
     	loadConfig64->codeIntegrity[1] = readDWord(pefile, diskOffset+152, DWORD_Buffer);
     	loadConfig64->codeIntegrity[2] = readDWord(pefile, diskOffset+156, DWORD_Buffer);
-    	
     	loadConfig64->guardAddressTakenIatEntryTable = readQWord(pefile, diskOffset+160, QWORD_Buffer);
     	loadConfig64->guardAddressTakenIatEntryCount = readQWord(pefile, diskOffset+168, QWORD_Buffer);
     	loadConfig64->guardLongJumpTargetTable = readQWord(pefile, diskOffset+176, QWORD_Buffer);
@@ -1410,6 +1613,14 @@ void loadConfigConsoleOutput64(FILE* pefile, struct IMAGE_LOAD_CONFIG64* loadCon
             ,reverse_endianess_uint64_t(loadConfig64->guardAddressTakenIatEntryCount), reverse_endianess_uint64_t(loadConfig64->guardLongJumpTargetTable)
             ,reverse_endianess_uint64_t(loadConfig64->guardLongJumpTargetCount)
         );
+}
+
+void initializeBoundImport64(uint32_t boundsCount, struct IMAGE_BOUND_IMPORT_DESCRIPTOR64* bounds64){
+    for(size_t i=0;i<boundsCount;i++){
+        bounds64[i].timestamp = (uint32_t)0;
+        bounds64[i].offsetModuleName = (uint16_t)0;
+        bounds64[i].numberOfModuleForwarderRefs = (uint16_t)0;
+    }
 }
 
 void parseBoundImport64(FILE* pefile, uint32_t diskOffset, uint32_t boundsCount, struct IMAGE_BOUND_IMPORT_DESCRIPTOR64* bounds64){
@@ -1615,11 +1826,15 @@ void parsePE64(FILE* pefile, struct switchList* psList){
     	return;
     }
     
+    initializeMSDOSHeader64(msDOSHeader64);
+    
     struct IMAGE_COFF_HEADER64* coffHeader64 = malloc(sizeof(struct IMAGE_COFF_HEADER64));
     if(coffHeader64 == NULL){
     	perror("Failed to allocate memory for coffHeader64 structure");
     	return;
     }
+    
+    initializeCoffHeader64(coffHeader64);
     
     coffHeader64->machineArchitecture = malloc(31 * sizeof(char));
     if(coffHeader64->machineArchitecture == NULL){
@@ -1648,6 +1863,7 @@ void parsePE64(FILE* pefile, struct switchList* psList){
     	perror("Failed to allocate memory for optionalHeader64 structure");
     	return;
     }
+    initializeOptionalHeader64(optionalHeader64);
     
     optionalHeader64->subsystemType = malloc(41 * sizeof(char));
     if(optionalHeader64->subsystemType == NULL){
@@ -1684,6 +1900,7 @@ void parsePE64(FILE* pefile, struct switchList* psList){
     	perror("Failed to allocate memory for sectionHeader64 structure\n");
     	return;
     }
+    initializeSectionHeader64(numberOfSections, sectionHeader64);
     
     parseSectionHeaders64(pefile, numberOfSections, memoryOffset, sectionHeader64);
     
@@ -1697,6 +1914,7 @@ void parsePE64(FILE* pefile, struct switchList* psList){
     	    printf("Failed to allocate memory for exports64 structure\n");
     	    return;
         }
+        initializeExportDirectory64(exports64);
         
         uint32_t diskOffset = convertRelativeAddressToDiskOffset64(reverse_endianess_uint32_t(optionalHeader64->dataDirectory[0].virtualAddress), numberOfSections, sectionHeader64);
         
@@ -1768,7 +1986,8 @@ void parsePE64(FILE* pefile, struct switchList* psList){
     		if(imports64[i] == NULL){
     			perror("Failed to allocate memory for IMAGE_IMPORT_DESCRIPTOR64\n");
     			return;
-    		}	
+    		}
+    		initializeImportDescriptor64(imports64[i]);
     	}
     	
     	parseImports64(pefile, numID, diskOffset, numberOfSections, sectionHeader64, imports64);
@@ -1811,6 +2030,7 @@ void parsePE64(FILE* pefile, struct switchList* psList){
     	    return;
     	
     	}
+    	initializeException64(exceptionCount, exception64);
     	
     	parseException64(pefile, diskOffset, exceptionCount, exception64);
     	exceptionConsoleOutput64(pefile, diskOffset, exceptionCount, exception64);
@@ -1844,6 +2064,11 @@ void parsePE64(FILE* pefile, struct switchList* psList){
         }
         
         struct IMAGE_CERTIFICATE64* certificate64 = malloc(certificateCount * sizeof(struct IMAGE_CERTIFICATE64));
+        if(certificate64 == NULL){
+            perror("Failed to allocate memory for certificate64");
+            return;
+        }
+        initializeCertificate64(certificateCount, certificate64);
         parseCertificate64(pefile, diskOffset, certificateCount, certificate64, optionalHeader64);
         certificateConsoleOutput64(pefile, certificateCount, certificate64);
         free(certificate64);
@@ -1851,11 +2076,12 @@ void parsePE64(FILE* pefile, struct switchList* psList){
     }
     
     if(reverse_endianess_uint32_t(optionalHeader64->dataDirectory[5].virtualAddress) != 0){
-	struct IMAGE_BASE_RELOCATION64* baseReloc64 = malloc(sizeof(struct IMAGE_BASE_RELOCATION64));
-	if(baseReloc64 == NULL){
-		perror("Failed to allocate memory for baseReloc64");
-		return;
-	}
+	   struct IMAGE_BASE_RELOCATION64* baseReloc64 = malloc(sizeof(struct IMAGE_BASE_RELOCATION64));
+	    if(baseReloc64 == NULL){
+		    perror("Failed to allocate memory for baseReloc64");
+		    return;
+	    }
+	    initializeBaseReloc64(1, baseReloc64);
 	
     	uint32_t diskOffset = convertRelativeAddressToDiskOffset64(reverse_endianess_uint32_t(optionalHeader64->dataDirectory[5].virtualAddress), numberOfSections, sectionHeader64);
     	uint32_t tmpDiskOffset = diskOffset;
@@ -1879,7 +2105,11 @@ void parsePE64(FILE* pefile, struct switchList* psList){
     	}
     	
     	free(baseReloc64);
-    	baseReloc64 = malloc(baseRelocCount * sizeof(struct IMAGE_BASE_RELOCATION32));
+    	baseReloc64 = malloc(baseRelocCount * sizeof(struct IMAGE_BASE_RELOCATION64));
+    	if(baseReloc64 == NULL){
+    	    perror("Failed to allocate memory for baseReloc64");
+    	}
+    	initializeBaseReloc64(baseRelocCount, baseReloc64);
 
     	parseBaseReloc64(pefile, diskOffset, baseRelocCount, baseReloc64);
     	baseRelocConsoleOutput64(pefile, diskOffset, baseRelocCount, baseReloc64);
@@ -1893,6 +2123,7 @@ void parsePE64(FILE* pefile, struct switchList* psList){
     		perror("Failed to allocate memory for debug64");
     		return;
     	}
+    	initializeDebug64(debugCount, debug64);
     	
     	uint32_t diskOffset = convertRelativeAddressToDiskOffset64(reverse_endianess_uint32_t(optionalHeader64->dataDirectory[6].virtualAddress), numberOfSections, sectionHeader64);
     	
@@ -1908,6 +2139,7 @@ void parsePE64(FILE* pefile, struct switchList* psList){
     	    perror("Failed to allocate memory for tls64");
     	    return;
     	}
+    	initializeTLS64(tls64);
     	
     	uint32_t diskOffset = convertRelativeAddressToDiskOffset64(reverse_endianess_uint32_t(optionalHeader64->dataDirectory[9].virtualAddress), numberOfSections, sectionHeader64);
     	parseTLS64(pefile, diskOffset, tls64);
@@ -1923,6 +2155,7 @@ void parsePE64(FILE* pefile, struct switchList* psList){
     		perror("Failed to allocate memory for loadConfig64");
     		return;
     	}
+    	initializeLoadConfig64(loadConfig64);
     	
     	uint32_t diskOffset = convertRelativeAddressToDiskOffset64(reverse_endianess_uint32_t(optionalHeader64->dataDirectory[10].virtualAddress), numberOfSections, sectionHeader64);
     	
@@ -1967,14 +2200,14 @@ void parsePE64(FILE* pefile, struct switchList* psList){
     		perror("Failed to allocate memory for bounds64");
     		return;
     	}
+    	initializeBoundImport64(boundsCount, bounds64);
+    	
     	uint32_t diskOffset = convertRelativeAddressToDiskOffset64(reverse_endianess_uint32_t(optionalHeader64->dataDirectory[11].virtualAddress), numberOfSections, sectionHeader64);
     	parseBoundImport64(pefile, diskOffset, boundsCount, bounds64);
     	boundsConsoleOutput64(pefile, diskOffset, boundsCount, bounds64);
     	
     	free(bounds64);
     }
-    
-    
     	
     for(size_t i=0;i<17;i++)
     	free(coffHeader64->characteristicsList[i]);
