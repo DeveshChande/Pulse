@@ -1113,7 +1113,7 @@ void importsConsoleOutput64(FILE* pefile, size_t numID, uint32_t diskOffset, uin
 	
 	for(size_t i=0;i<numID;i++){
 		if(!((imports64[i]->u.OriginalFirstThunk.u1.ordinal == 0) && (imports64[i]->timeDateStamp == 0) && (imports64[i]->forwarderChain == 0) && (imports64[i]->name == 0) && (imports64[i]->FirstThunk.u1.addressOfData == 0))){
-			printf("[IMPORT_DESCRIPTOR64]\n");
+			printf("[IMPORT_DESCRIPTOR32]\n");
 	    		printf("\timports64[%zu]->u.OriginalFirstThunk.u1.ordinal: %04x\n", i, imports64[i]->u.OriginalFirstThunk.u1.ordinal);
 	    		printf("\timports64[%zu]->timeDateStamp: %04x\n", i, imports64[i]->timeDateStamp);
 	    		printf("\timports64[%zu]->forwarderChain: %04x\n", i, imports64[i]->forwarderChain);
@@ -1814,6 +1814,99 @@ void consoleOutput64(struct IMAGE_DOS_HEADER64* msDOSHeader64, struct IMAGE_COFF
     
 }
 
+void computeMD5Hash64(FILE* pefile){
+    size_t n=0;
+    char buff[4096];
+    unsigned char digestValue[EVP_MAX_MD_SIZE];
+    unsigned int digestLength;
+    fseek(pefile, 0, SEEK_SET);
+    
+    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+    if(mdctx == NULL){
+    	perror("Failed to configure library context");
+    	return;
+    }
+    
+    EVP_DigestInit_ex(mdctx, EVP_md5(), NULL);
+    while ((n = fread(buff, 1, sizeof(buff), pefile)))  /* reads in values from buffer containing file pointer */
+    {
+            EVP_DigestUpdate(mdctx, buff, n);   /* Add buffer to hash context */
+    }
+    
+    EVP_DigestFinal_ex(mdctx, digestValue, &digestLength);
+    printf("MD5: ");
+    for (size_t i = 0; i < digestLength; i++)    /* loops through hash length */
+    {
+            printf("%02x", digestValue[i]);    /* prints 2 hex-values of hash per loop */
+    }
+    printf("\n");
+    
+    EVP_MD_CTX_free(mdctx);
+    
+}
+
+void computeSHA1Hash64(FILE* pefile){
+    size_t n=0;
+    char buff[4096];
+    unsigned char digestValue[EVP_MAX_MD_SIZE];
+    unsigned int digestLength;
+    fseek(pefile, 0, SEEK_SET);
+    
+    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+    if(mdctx == NULL){
+    	perror("Failed to configure library context");
+    	return;
+    }
+    
+    EVP_DigestInit_ex(mdctx, EVP_sha1(), NULL);
+    while ((n = fread(buff, 1, sizeof(buff), pefile)))  /* reads in values from buffer containing file pointer */
+    {
+            EVP_DigestUpdate(mdctx, buff, n);   /* Add buffer to hash context */
+    }
+    
+    EVP_DigestFinal_ex(mdctx, digestValue, &digestLength);
+    printf("SHA-1: ");
+    for (size_t i = 0; i < digestLength; i++)    /* loops through hash length */
+    {
+            printf("%02x", digestValue[i]);    /* prints 2 hex-values of hash per loop */
+    }
+    printf("\n");
+    
+    EVP_MD_CTX_free(mdctx);
+    
+}
+
+void computeSHA256Hash64(FILE* pefile){
+    size_t n=0;
+    char buff[4096];
+    unsigned char digestValue[EVP_MAX_MD_SIZE];
+    unsigned int digestLength;
+    fseek(pefile, 0, SEEK_SET);
+    
+    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+    if(mdctx == NULL){
+    	perror("Failed to configure library context");
+    	return;
+    }
+    
+    EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL);
+    while ((n = fread(buff, 1, sizeof(buff), pefile)))  /* reads in values from buffer containing file pointer */
+    {
+            EVP_DigestUpdate(mdctx, buff, n);   /* Add buffer to hash context */
+    }
+    
+    EVP_DigestFinal_ex(mdctx, digestValue, &digestLength);
+    printf("SHA-256: ");
+    for (size_t i = 0; i < digestLength; i++)    /* loops through hash length */
+    {
+            printf("%02x", digestValue[i]);    /* prints 2 hex-values of hash per loop */
+    }
+    printf("\n");
+    
+    EVP_MD_CTX_free(mdctx);
+    
+}
+
 
 void parsePE64(FILE* pefile, struct switchList* psList){
     uint16_t* WORD_Buffer = calloc(2, sizeof(uint8_t));
@@ -2207,6 +2300,13 @@ void parsePE64(FILE* pefile, struct switchList* psList){
     	boundsConsoleOutput64(pefile, diskOffset, boundsCount, bounds64);
     	
     	free(bounds64);
+    }
+    
+    if(psList->computeHash){
+        printf("\n\nHASHES\n---------------\n");
+    	computeMD5Hash64(pefile);
+    	computeSHA1Hash64(pefile);
+    	computeSHA256Hash64(pefile);
     }
     	
     for(size_t i=0;i<17;i++)

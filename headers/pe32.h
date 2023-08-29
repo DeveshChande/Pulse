@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
+#include <openssl/evp.h>
 
 #ifndef PE32_H
 #define PE32_H
@@ -1991,6 +1992,100 @@ void consoleOutput32(struct IMAGE_DOS_HEADER32* msDOSHeader, struct IMAGE_COFF_H
     
 }
 
+void computeMD5Hash32(FILE* pefile){
+    size_t n=0;
+    char buff[4096];
+    unsigned char digestValue[EVP_MAX_MD_SIZE];
+    unsigned int digestLength;
+    fseek(pefile, 0, SEEK_SET);
+    
+    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+    if(mdctx == NULL){
+    	perror("Failed to configure library context");
+    	return;
+    }
+    
+    EVP_DigestInit_ex(mdctx, EVP_md5(), NULL);
+    while ((n = fread(buff, 1, sizeof(buff), pefile)))  /* reads in values from buffer containing file pointer */
+    {
+            EVP_DigestUpdate(mdctx, buff, n);   /* Add buffer to hash context */
+    }
+    
+    EVP_DigestFinal_ex(mdctx, digestValue, &digestLength);
+    printf("MD5: ");
+    for (size_t i = 0; i < digestLength; i++)    /* loops through hash length */
+    {
+            printf("%02x", digestValue[i]);    /* prints 2 hex-values of hash per loop */
+    }
+    printf("\n");
+    
+    EVP_MD_CTX_free(mdctx);
+    
+}
+
+
+void computeSHA1Hash32(FILE* pefile){
+    size_t n=0;
+    char buff[4096];
+    unsigned char digestValue[EVP_MAX_MD_SIZE];
+    unsigned int digestLength;
+    fseek(pefile, 0, SEEK_SET);
+    
+    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+    if(mdctx == NULL){
+    	perror("Failed to configure library context");
+    	return;
+    }
+    
+    EVP_DigestInit_ex(mdctx, EVP_sha1(), NULL);
+    while ((n = fread(buff, 1, sizeof(buff), pefile)))  /* reads in values from buffer containing file pointer */
+    {
+            EVP_DigestUpdate(mdctx, buff, n);   /* Add buffer to hash context */
+    }
+    
+    EVP_DigestFinal_ex(mdctx, digestValue, &digestLength);
+    printf("SHA-1: ");
+    for (size_t i = 0; i < digestLength; i++)    /* loops through hash length */
+    {
+            printf("%02x", digestValue[i]);    /* prints 2 hex-values of hash per loop */
+    }
+    printf("\n");
+    
+    EVP_MD_CTX_free(mdctx);
+    
+}
+
+
+void computeSHA256Hash32(FILE* pefile){
+    size_t n=0;
+    char buff[4096];
+    unsigned char digestValue[EVP_MAX_MD_SIZE];
+    unsigned int digestLength;
+    fseek(pefile, 0, SEEK_SET);
+    
+    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
+    if(mdctx == NULL){
+    	perror("Failed to configure library context");
+    	return;
+    }
+    
+    EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL);
+    while ((n = fread(buff, 1, sizeof(buff), pefile)))  /* reads in values from buffer containing file pointer */
+    {
+            EVP_DigestUpdate(mdctx, buff, n);   /* Add buffer to hash context */
+    }
+    
+    EVP_DigestFinal_ex(mdctx, digestValue, &digestLength);
+    printf("SHA-256: ");
+    for (size_t i = 0; i < digestLength; i++)    /* loops through hash length */
+    {
+            printf("%02x", digestValue[i]);    /* prints 2 hex-values of hash per loop */
+    }
+    printf("\n");
+    
+    EVP_MD_CTX_free(mdctx);
+    
+}
 
 void parsePE32(FILE* pefile, struct switchList* psList){
     uint16_t* WORD_Buffer = calloc(2, sizeof(uint8_t));
@@ -2381,6 +2476,13 @@ void parsePE32(FILE* pefile, struct switchList* psList){
     	boundsConsoleOutput32(pefile, diskOffset, boundsCount, bounds32);
     	
     	free(bounds32);
+    }
+    
+    if(psList->computeHash){
+        printf("\n\nHASHES\n---------------\n");
+    	computeMD5Hash32(pefile);
+    	computeSHA1Hash32(pefile);
+    	computeSHA256Hash32(pefile);
     }
     	
     for(size_t i=0;i<17;i++)
