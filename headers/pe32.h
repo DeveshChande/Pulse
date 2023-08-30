@@ -2556,7 +2556,7 @@ void parsePE32(FILE* pefile, struct switchList* psList){
         	perror("Unable to allocate memory for sha256HashValue in vtLookup");
         }
         sha256HashValue = computeSHA256Hash32(pefile, sha256HashValue);
-    	virusTotalResults32(sha256HashValue, "fff09b88b204426d835588f2721290958bed35c10536a641a0df1a844675ac8b");
+    	virusTotalResults32(sha256HashValue, "");
     	free(sha256HashValue);
     }
     	
