@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <time.h>
 #include <openssl/evp.h>
+#include <curl/curl.h>
 
 #ifndef PE32_H
 #define PE32_H
@@ -1992,99 +1993,145 @@ void consoleOutput32(struct IMAGE_DOS_HEADER32* msDOSHeader, struct IMAGE_COFF_H
     
 }
 
-void computeMD5Hash32(FILE* pefile){
+char* computeMD5Hash32(FILE* pefile, char* md5HashValue){
+
     size_t n=0;
-    char buff[4096];
-    unsigned char digestValue[EVP_MAX_MD_SIZE];
-    unsigned int digestLength;
+    char md5buff[4096];
+    unsigned char md5digestValue[EVP_MAX_MD_SIZE];
+    unsigned int md5digestLength;
     fseek(pefile, 0, SEEK_SET);
     
-    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
-    if(mdctx == NULL){
+    EVP_MD_CTX* md5mdctx = EVP_MD_CTX_new();
+    if(md5mdctx == NULL){
     	perror("Failed to configure library context");
-    	return;
     }
     
-    EVP_DigestInit_ex(mdctx, EVP_md5(), NULL);
-    while ((n = fread(buff, 1, sizeof(buff), pefile)))  /* reads in values from buffer containing file pointer */
+    EVP_DigestInit_ex(md5mdctx, EVP_md5(), NULL);
+    while ((n = fread(md5buff, 1, sizeof(md5buff), pefile)))
     {
-            EVP_DigestUpdate(mdctx, buff, n);   /* Add buffer to hash context */
+            EVP_DigestUpdate(md5mdctx, md5buff, n);
     }
     
-    EVP_DigestFinal_ex(mdctx, digestValue, &digestLength);
-    printf("MD5: ");
-    for (size_t i = 0; i < digestLength; i++)    /* loops through hash length */
+    EVP_DigestFinal_ex(md5mdctx, md5digestValue, &md5digestLength);
+    
+    size_t j=0;
+    for (size_t i = 0; i < md5digestLength; i++)
     {
-            printf("%02x", digestValue[i]);    /* prints 2 hex-values of hash per loop */
+    	    char tmp[3] = {0};
+    	    sprintf(tmp, "%02x", md5digestValue[i]);
+    	    tmp[2] = '\0';
+            md5HashValue[j++] = tmp[0];
+            md5HashValue[j++] = tmp[1];
     }
-    printf("\n");
     
-    EVP_MD_CTX_free(mdctx);
+    md5HashValue[32] = '\0';
+    EVP_MD_CTX_free(md5mdctx);
+    return md5HashValue;
+
+}
+
+
+char* computeSHA1Hash32(FILE* pefile, char* sha1HashValue){
+
+    size_t n=0;
+    char sha1buff[4096];
+    unsigned char sha1digestValue[EVP_MAX_MD_SIZE];
+    unsigned int sha1digestLength;
+    fseek(pefile, 0, SEEK_SET);
+    
+    EVP_MD_CTX* sha1mdctx = EVP_MD_CTX_new();
+    if(sha1mdctx == NULL){
+    	perror("Failed to configure library context");
+    }
+    
+    EVP_DigestInit_ex(sha1mdctx, EVP_sha1(), NULL);
+    while ((n = fread(sha1buff, 1, sizeof(sha1buff), pefile)))
+    {
+            EVP_DigestUpdate(sha1mdctx, sha1buff, n);
+    }
+    
+    EVP_DigestFinal_ex(sha1mdctx, sha1digestValue, &sha1digestLength);
+
+    size_t j=0;
+    for (size_t i = 0; i < sha1digestLength; i++)
+    {
+    	    char tmp[3] = {0};
+    	    sprintf(tmp, "%02x", sha1digestValue[i]);
+    	    tmp[2] = '\0';
+            sha1HashValue[j++] = tmp[0];
+            sha1HashValue[j++] = tmp[1];
+    }
+    
+    sha1HashValue[42] = '\0';
+    EVP_MD_CTX_free(sha1mdctx);
+    return sha1HashValue;
     
 }
 
 
-void computeSHA1Hash32(FILE* pefile){
+char* computeSHA256Hash32(FILE* pefile, char* sha256HashValue){
     size_t n=0;
-    char buff[4096];
-    unsigned char digestValue[EVP_MAX_MD_SIZE];
-    unsigned int digestLength;
+    char sha256buff[4096];
+    unsigned char sha256digestValue[EVP_MAX_MD_SIZE];
+    unsigned int sha256digestLength;
     fseek(pefile, 0, SEEK_SET);
     
-    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
-    if(mdctx == NULL){
+    EVP_MD_CTX* sha256mdctx = EVP_MD_CTX_new();
+    if(sha256mdctx == NULL){
     	perror("Failed to configure library context");
-    	return;
     }
     
-    EVP_DigestInit_ex(mdctx, EVP_sha1(), NULL);
-    while ((n = fread(buff, 1, sizeof(buff), pefile)))  /* reads in values from buffer containing file pointer */
+    EVP_DigestInit_ex(sha256mdctx, EVP_sha256(), NULL);
+    while ((n = fread(sha256buff, 1, sizeof(sha256buff), pefile)))
     {
-            EVP_DigestUpdate(mdctx, buff, n);   /* Add buffer to hash context */
+            EVP_DigestUpdate(sha256mdctx, sha256buff, n);
     }
     
-    EVP_DigestFinal_ex(mdctx, digestValue, &digestLength);
-    printf("SHA-1: ");
-    for (size_t i = 0; i < digestLength; i++)    /* loops through hash length */
+    EVP_DigestFinal_ex(sha256mdctx, sha256digestValue, &sha256digestLength);
+   
+    size_t j=0;
+    for (size_t i = 0; i < sha256digestLength; i++)
     {
-            printf("%02x", digestValue[i]);    /* prints 2 hex-values of hash per loop */
+    	    char tmp[3] = {0};
+    	    sprintf(tmp, "%02x", sha256digestValue[i]);
+    	    tmp[2] = '\0';
+            sha256HashValue[j++] = tmp[0];
+            sha256HashValue[j++] = tmp[1];
     }
-    printf("\n");
-    
-    EVP_MD_CTX_free(mdctx);
+    sha256HashValue[64] = '\0';
+    EVP_MD_CTX_free(sha256mdctx);
+    return sha256HashValue;
     
 }
 
+void virusTotalResults32(char* sha256HashValue, char* apiKey){
 
-void computeSHA256Hash32(FILE* pefile){
-    size_t n=0;
-    char buff[4096];
-    unsigned char digestValue[EVP_MAX_MD_SIZE];
-    unsigned int digestLength;
-    fseek(pefile, 0, SEEK_SET);
-    
-    EVP_MD_CTX* mdctx = EVP_MD_CTX_new();
-    if(mdctx == NULL){
-    	perror("Failed to configure library context");
-    	return;
-    }
-    
-    EVP_DigestInit_ex(mdctx, EVP_sha256(), NULL);
-    while ((n = fread(buff, 1, sizeof(buff), pefile)))  /* reads in values from buffer containing file pointer */
-    {
-            EVP_DigestUpdate(mdctx, buff, n);   /* Add buffer to hash context */
-    }
-    
-    EVP_DigestFinal_ex(mdctx, digestValue, &digestLength);
-    printf("SHA-256: ");
-    for (size_t i = 0; i < digestLength; i++)    /* loops through hash length */
-    {
-            printf("%02x", digestValue[i]);    /* prints 2 hex-values of hash per loop */
-    }
-    printf("\n");
-    
-    EVP_MD_CTX_free(mdctx);
-    
+printf("\n\nVirusTotal Results:\n------------------------------------\n");
+
+char apiUrl[106] = {0};
+const char* baseUrl = "https://www.virustotal.com/api/v3/files/";
+sprintf(apiUrl, "%s%s", baseUrl, sha256HashValue);
+
+curl_global_init(CURL_GLOBAL_DEFAULT);
+CURL *hnd = curl_easy_init();
+
+curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "GET");
+curl_easy_setopt(hnd, CURLOPT_WRITEDATA, stdout);
+curl_easy_setopt(hnd, CURLOPT_URL, apiUrl);
+
+struct curl_slist *headers = NULL;
+headers = curl_slist_append(headers, "accept: application/json");
+
+char xAPIKey[75] = {0};
+const char* headerTmp = "x-apikey: ";
+sprintf(xAPIKey, "%s%s", headerTmp, apiKey);
+headers = curl_slist_append(headers, xAPIKey);
+curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, headers);
+
+CURLcode ret = curl_easy_perform(hnd);
+curl_easy_cleanup(hnd);
+curl_global_cleanup();
+
 }
 
 void parsePE32(FILE* pefile, struct switchList* psList){
@@ -2479,10 +2526,38 @@ void parsePE32(FILE* pefile, struct switchList* psList){
     }
     
     if(psList->computeHash){
+        char* md5HashValue = malloc(33 * sizeof(char));
+        if(md5HashValue == NULL){
+        	perror("Unable to allocate memory for md5HashValue");
+        }
+        char* sha1HashValue = malloc(42 * sizeof(char));
+        if(sha1HashValue == NULL){
+        	perror("Unable to allocate memory for sha1HashValue");
+        }
+        char* sha256HashValue = malloc(64 * sizeof(char));
+        if(sha256HashValue == NULL){
+        	perror("Unable to allocate memory for sha256HashValue");
+        }
         printf("\n\nHASHES\n---------------\n");
-    	computeMD5Hash32(pefile);
-    	computeSHA1Hash32(pefile);
-    	computeSHA256Hash32(pefile);
+    	md5HashValue = computeMD5Hash32(pefile, md5HashValue);
+    	printf("MD5: %s\n", md5HashValue);
+    	sha1HashValue = computeSHA1Hash32(pefile, sha1HashValue);
+    	printf("SHA1: %s\n", sha1HashValue);
+    	sha256HashValue = computeSHA256Hash32(pefile, sha256HashValue);
+    	printf("SHA256: %s\n", sha256HashValue);
+    	free(md5HashValue);
+    	free(sha1HashValue);
+    	free(sha256HashValue);
+    }
+    
+    if(psList->vtLookup){
+        char* sha256HashValue = malloc(64 * sizeof(char));
+        if(sha256HashValue == NULL){
+        	perror("Unable to allocate memory for sha256HashValue in vtLookup");
+        }
+        sha256HashValue = computeSHA256Hash32(pefile, sha256HashValue);
+    	virusTotalResults32(sha256HashValue, "fff09b88b204426d835588f2721290958bed35c10536a641a0df1a844675ac8b");
+    	free(sha256HashValue);
     }
     	
     for(size_t i=0;i<17;i++)
