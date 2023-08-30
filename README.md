@@ -20,3 +20,5 @@ To get started, simply clone the repository and build the utility via _make_.
 `--path` : Specify the file path of the Portable Executable to be parsed.
 
 `--computeHash`: Display MD5, SHA-1, and SHA256 hashes of the specified file.
+
+`--vtLookup`: Display VirusTotal results.
