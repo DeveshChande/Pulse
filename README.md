@@ -1,6 +1,6 @@
-# Pulse
+# Sakizuke
 
-Pulse is a utility for parsing Portable Executables, written in C.
+Sakizuke is a utility for parsing Portable Executables, written in C.
 
 It is built for conducting static analysis - cataloging structural information and empowering analytic capabilities.
 
@@ -9,7 +9,7 @@ It is built for conducting static analysis - cataloging structural information a
 
 To get started, simply clone the repository and build the utility via _make_.
 
-`git clone https://github.com/DeveshChande/Pulse.git`
+`git clone https://github.com/DeveshChande/Sakizuke.git`
 
 `make`
 
