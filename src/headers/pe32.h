@@ -472,12 +472,13 @@ void initializeTLS32(struct IMAGE_TLS_DIRECTORY32* tls32);
 void initializeLoadConfig32(struct IMAGE_LOAD_CONFIG32* loadConfig32);
 void initializeBoundImport32(uint32_t boundsCount, struct IMAGE_BOUND_IMPORT_DESCRIPTOR32* bounds32);
 
+void parsePE32(FILE* pefile, struct switchList* psList);
 void parseMSDOSHeader(FILE* pefile, struct IMAGE_DOS_HEADER32* msDOSHeader);
 void parseCoffHeader(FILE* pefile, uint32_t elfanew, struct IMAGE_COFF_HEADER32* coffHeader);
 void parseOptionalHeader32(FILE* pefile, uint32_t elfanew, struct IMAGE_OPTIONAL_HEADER32* optionalHeader32);
 void parseSectionHeaders32(FILE* pefile, uint16_t numberOfSections, uint32_t memoryOffset, struct SECTION_HEADER32* sectionHeader32);
 void parseExports32(FILE* pefile, uint32_t diskOffset, uint16_t numberOfSections, struct SECTION_HEADER32* sectionHeader32, struct IMAGE_EXPORT_DIRECTORY32* exports32, uint32_t* exportFunctionAddresses, uint32_t* exportFunctionNames, uint16_t* exportOrdinalAddresses);
-void parseImports32(FILE* pefile, size_t numID, uint32_t diskOffset, uint16_t numberOfSections, struct SECTION_HEADER32* sectionHeader32, struct IMAGE_IMPORT_DESCRIPTOR32** imports32);
+void parseImports32(FILE* pefile, size_t numID, uint32_t diskOffset, struct IMAGE_IMPORT_DESCRIPTOR32** imports32);
 void parseResources32(FILE* pefile);
 void parseException32(FILE* pefile, uint32_t diskOffset, size_t exceptionCount, struct IMAGE_EXCEPTION32* exception32);
 void parseCertificate32(FILE* pefile, uint32_t diskOffset, size_t certificateCount, struct IMAGE_CERTIFICATE32* certificate32, struct IMAGE_OPTIONAL_HEADER32* optionalHeader32);
@@ -490,12 +491,18 @@ void parseBoundImport32(FILE* pefile, uint32_t diskOffset, uint32_t boundsCount,
 void consoleOutput32(struct IMAGE_DOS_HEADER32* msDOSHeader, struct IMAGE_COFF_HEADER32* coffHeader, struct IMAGE_OPTIONAL_HEADER32* optionalHeader32, struct SECTION_HEADER32* sectionHeader32);
 void exportsConsoleOutput32(FILE* pefile, struct IMAGE_OPTIONAL_HEADER32* optionalHeader32, struct IMAGE_EXPORT_DIRECTORY32* exports32, uint32_t* exportFunctionAddresses, uint32_t* exportFunctionNames, uint16_t* exportOrdinalAddresses, uint16_t numberOfSections, struct SECTION_HEADER32* sectionHeader32);
 void importsConsoleOutput32(FILE* pefile, size_t numID, uint32_t diskOffset, uint16_t numberOfSections, struct SECTION_HEADER32* sectionHeader32, struct IMAGE_IMPORT_DESCRIPTOR32** imports32);
-void exceptionConsoleOutput32(FILE* pefile, uint32_t diskOffset, size_t exceptionCount, struct IMAGE_EXCEPTION32* exception32);
-void certificateConsoleOutput32(FILE* pefile, size_t certificateCount, struct IMAGE_CERTIFICATE32* certificate32);
+void exceptionConsoleOutput32(size_t exceptionCount, struct IMAGE_EXCEPTION32* exception32);
+void certificateConsoleOutput32(size_t certificateCount, struct IMAGE_CERTIFICATE32* certificate32);
 void baseRelocConsoleOutput32(FILE* pefile, uint32_t diskOffset, size_t baseRelocCount, struct IMAGE_BASE_RELOCATION32* baseReloc32);
-void debugConsoleOutput32(FILE* pefile, size_t debugCount, uint32_t diskOffset, struct IMAGE_DEBUG_DIRECTORY32* debug32, struct SECTION_HEADER32* sectionHeader32);
-void loadConfigConsoleOutput32(FILE* pefile, struct IMAGE_LOAD_CONFIG32* loadConfig32);
-void boundsConsoleOutput32(FILE* pefile, uint32_t diskOffset, uint32_t boundsCount, struct IMAGE_BOUND_IMPORT_DESCRIPTOR32* bounds32);
+void debugConsoleOutput32(FILE* pefile, size_t debugCount, struct IMAGE_DEBUG_DIRECTORY32* debug32, struct SECTION_HEADER32* sectionHeader32);
+void tlsConsoleOutput32(struct IMAGE_TLS_DIRECTORY32* tls32);
+void loadConfigConsoleOutput32(struct IMAGE_LOAD_CONFIG32* loadConfig32);
+void boundsConsoleOutput32(uint32_t boundsCount, struct IMAGE_BOUND_IMPORT_DESCRIPTOR32* bounds32);
+
+char* computeMD5Hash32(FILE* pefile, char* md5HashValue);
+char* computeSHA1Hash32(FILE* pefile, char* sha1HashValue);
+char* computeSHA256Hash32(FILE* pefile, char* sha256HashValue);
+void virusTotalResults32(char* sha256HashValue, char* apiKey);
 
 uint32_t convert_DWORD_To_uint32_t(DWORD structureValue){
     uint32_t convertedStructureValue = (((structureValue&255)&15)*16777216) + (((structureValue&255)>>4)*268435456) + ((((structureValue>>8)&255)&15)*65536) + ((((structureValue>>8)&255)>>4)*1048576) + (((structureValue>>16)&15)*256) + ((((structureValue>>16)&255)>>4)*4096) + (((structureValue>>24)&15)*1) + (((structureValue>>24)>>4)*16);
@@ -503,14 +510,14 @@ uint32_t convert_DWORD_To_uint32_t(DWORD structureValue){
 }
 
 uint16_t convert_WORD_To_uint16_t(WORD structureValue){
-    uint16_t convertedStructureValue = (structureValue&15)*256 + ((structureValue>>4)&15)*4096 + (((structureValue>>8)&15)*1) + ((structureValue>>12)&15)*16;
+    uint16_t convertedStructureValue = (uint16_t)((structureValue&15)*256 + ((structureValue>>4)&15)*4096 + (((structureValue>>8)&15)*1) + ((structureValue>>12)&15)*16);
     return convertedStructureValue;
 }
 
 unsigned char hexdigit2int(unsigned char xd){
   if (xd <= '9')
     return xd - '0';
-  xd = tolower(xd);
+  xd = (unsigned char) tolower(xd);
   if (xd == 'a')
     return 10;
   if (xd == 'b')
@@ -535,9 +542,9 @@ char* convert_uint64_t_ToString(uint64_t numericalValue, char* computedString){
     sprintf(computedString, "%04lx", numericalValue);
     while (*src != '\0')
     {
-        const unsigned char high = hexdigit2int(*src++);
-        const unsigned char low  = hexdigit2int(*src++);
-        *dst++ = (high << 4) | low;
+        const unsigned char high = hexdigit2int((unsigned char) *src++);
+        const unsigned char low  = hexdigit2int((unsigned char) *src++);
+        *dst++ = (char) ((high << 4) | low);
     }
     *dst = '\0';
     strcpy(computedString, text);
@@ -726,7 +733,7 @@ void parseCoffHeader(FILE* file, uint32_t elfanew, struct IMAGE_COFF_HEADER32* c
             break;
     }
 
-    int imageFileCharacteristics[16] = {1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768};
+    uint16_t imageFileCharacteristics[16] = {1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768};
     int* savedCharacteristics = calloc(16, sizeof(int));
     size_t j=0;
     uint16_t characteristics = reverse_endianess_uint16_t(coffHeader->characteristics);
@@ -927,7 +934,7 @@ void parseOptionalHeader32(FILE* pefile, uint32_t elfanew, struct IMAGE_OPTIONAL
             break;
     }
 
-    int imageFileCharacteristics[16] = {1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768};
+    uint16_t imageFileCharacteristics[16] = {1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768};
     int* savedCharacteristics = calloc(16, sizeof(int));
     j=0;
     uint16_t dllCharacteristics = reverse_endianess_uint16_t(optionalHeader32->dllCharacteristics);
@@ -1148,7 +1155,7 @@ void initializeImportDescriptor32(struct IMAGE_IMPORT_DESCRIPTOR32* importDescri
     	importDescriptor->FirstThunk.u1.addressOfData = (uint32_t)0;
 }
 
-void parseImports32(FILE* pefile, size_t numID, uint32_t diskOffset, uint16_t numberOfSections, struct SECTION_HEADER32* sectionHeader32, struct IMAGE_IMPORT_DESCRIPTOR32** imports32){
+void parseImports32(FILE* pefile, size_t numID, uint32_t diskOffset, struct IMAGE_IMPORT_DESCRIPTOR32** imports32){
     
     uint32_t* DWORD_Buffer = calloc(4, sizeof(uint8_t));
 
@@ -1260,7 +1267,7 @@ void parseException32(FILE* pefile, uint32_t diskOffset, size_t exceptionCount, 
     free(DWORD_Buffer);
 }
 
-void exceptionConsoleOutput32(FILE* pefile, uint32_t diskOffset, size_t exceptionCount, struct IMAGE_EXCEPTION32* exception32){
+void exceptionConsoleOutput32(size_t exceptionCount, struct IMAGE_EXCEPTION32* exception32){
 
 	printf("Exception Table\n-----------------------------\n");	
 
@@ -1303,7 +1310,7 @@ void parseCertificate32(FILE* pefile, uint32_t diskOffset, size_t certificateCou
 
 }
 
-void certificateConsoleOutput32(FILE* pefile, size_t certificateCount, struct IMAGE_CERTIFICATE32* certificate32){
+void certificateConsoleOutput32(size_t certificateCount, struct IMAGE_CERTIFICATE32* certificate32){
     printf("CERTIFICATE INFORMATION\n-------------------------------------------\n\n");
     for(size_t i=0;i<certificateCount;i++){
     	printf("certificate32[%zu].dwLength: %04x\n", i, reverse_endianess_uint32_t(certificate32[i].dwLength));
@@ -1337,7 +1344,7 @@ void parseBaseReloc32(FILE* pefile, uint32_t diskOffset, size_t baseRelocCount, 
         baseReloc32[i].blockSize = reverse_endianess_uint32_t(readDWord(pefile, diskOffset+4, DWORD_Buffer));
         diskOffset += 8;
         typeCount = (baseReloc32[i].blockSize - 8) / 2;  	
-    	diskOffset += (typeCount * sizeof(WORD));
+    	diskOffset += (uint32_t) (typeCount * sizeof(WORD));
     	i++;
     }
 
@@ -1429,7 +1436,7 @@ void parseDebug32(FILE* pefile, size_t debugCount, uint32_t diskOffset, struct I
 
 }
 
-void debugConsoleOutput32(FILE* pefile, size_t debugCount, uint32_t diskOffset, struct IMAGE_DEBUG_DIRECTORY32* debug32, struct SECTION_HEADER32* sectionHeader32){
+void debugConsoleOutput32(FILE* pefile, size_t debugCount, struct IMAGE_DEBUG_DIRECTORY32* debug32, struct SECTION_HEADER32* sectionHeader32){
     
     uint8_t* BYTE_Buffer = calloc(1, sizeof(uint8_t));
     uint16_t* WORD_Buffer = calloc(2, sizeof(uint8_t));
@@ -1451,7 +1458,7 @@ void debugConsoleOutput32(FILE* pefile, size_t debugCount, uint32_t diskOffset, 
     	printf("debug32[%zu]->pointerToRawData: %04x\n", i, reverse_endianess_uint32_t(debug32[i].pointerToRawData));
     
     
-    	uint32_t cvSignatureOffset = convertRelativeAddressToDiskOffset(reverse_endianess_uint32_t(debug32[i].addressOfRawData), debugCount, sectionHeader32);
+    	uint32_t cvSignatureOffset = convertRelativeAddressToDiskOffset(reverse_endianess_uint32_t(debug32[i].addressOfRawData), (uint16_t)debugCount, sectionHeader32);
     	uint32_t cvSignature = readDWord(pefile, cvSignatureOffset, DWORD_Buffer);
     
     	
@@ -1525,7 +1532,7 @@ void parseTLS32(FILE* pefile, uint32_t diskOffset, struct IMAGE_TLS_DIRECTORY32*
 	  free(DWORD_Buffer);
 }
 
-void tlsConsoleOutput32(FILE* pefile, uint32_t diskOffset, struct IMAGE_TLS_DIRECTORY32* tls32){
+void tlsConsoleOutput32(struct IMAGE_TLS_DIRECTORY32* tls32){
 
 	    printf("TLS Information\n---------------------------------\n");
 	    printf("tls32->startAddressOfRawData: %04x\n", tls32->startAddressOfRawData);
@@ -1614,7 +1621,7 @@ void parseLoadConfig32(FILE* pefile, uint32_t diskOffset, struct IMAGE_LOAD_CONF
     	free(DWORD_Buffer);
 }
 
-void loadConfigConsoleOutput32(FILE* pefile, struct IMAGE_LOAD_CONFIG32* loadConfig32){
+void loadConfigConsoleOutput32(struct IMAGE_LOAD_CONFIG32* loadConfig32){
 
         printf("LOAD CONFIG INFORMATION\n-----------------------------------\n\n");
 	printf(
@@ -1714,7 +1721,7 @@ void parseBoundImport32(FILE* pefile, uint32_t diskOffset, uint32_t boundsCount,
 
 }
 
-void boundsConsoleOutput32(FILE* pefile, uint32_t diskOffset, uint32_t boundsCount, struct IMAGE_BOUND_IMPORT_DESCRIPTOR32* bounds32){
+void boundsConsoleOutput32(uint32_t boundsCount, struct IMAGE_BOUND_IMPORT_DESCRIPTOR32* bounds32){
     uint8_t* BYTE_Buffer = calloc(1, sizeof(uint8_t));
     uint16_t* WORD_Buffer = calloc(2, sizeof(uint8_t));
     uint32_t* DWORD_Buffer = calloc(4, sizeof(uint8_t));
@@ -1723,7 +1730,8 @@ void boundsConsoleOutput32(FILE* pefile, uint32_t diskOffset, uint32_t boundsCou
     for(size_t i=0;i<boundsCount;i++){
     	printf("bounds32[%zu].timestamp: %04x\n", i, bounds32[i].timestamp);
     	printf("bounds32[%zu].offsetModuleName (RVA): %02x\n", i, bounds32[i].offsetModuleName);
-    	printf("bounds32[%zu].numberOfModuleForwarderRefs: %02x\n", i, bounds32[i++].numberOfModuleForwarderRefs);
+    	printf("bounds32[%zu].numberOfModuleForwarderRefs: %02x\n", i, bounds32[i].numberOfModuleForwarderRefs);
+    	i++;
     }
 
     free(BYTE_Buffer);
@@ -1772,7 +1780,7 @@ void consoleOutput32(struct IMAGE_DOS_HEADER32* msDOSHeader, struct IMAGE_COFF_H
     "coffHeader->numberOfSymbols: 0x%04x\n"
     "coffHeader->sizeOfOptionalHeader: 0x%02x\n"
     ,coffHeader->machineArchitecture, reverse_endianess_uint16_t(coffHeader->numberOfSections), reverse_endianess_uint32_t(coffHeader->timeDateStamp), ctime(&coffHeaderTimestamp)
-    ,reverse_endianess_uint16_t(coffHeader->pointerToSymbolTable), reverse_endianess_uint32_t(coffHeader->numberOfSymbols), reverse_endianess_uint16_t(coffHeader->sizeOfOptionalHeader)
+    ,reverse_endianess_uint32_t(coffHeader->pointerToSymbolTable), reverse_endianess_uint32_t(coffHeader->numberOfSymbols), reverse_endianess_uint16_t(coffHeader->sizeOfOptionalHeader)
     );
     printf("coffHeader->characteristics:\n");
     size_t k=0;
@@ -1842,8 +1850,6 @@ void consoleOutput32(struct IMAGE_DOS_HEADER32* msDOSHeader, struct IMAGE_COFF_H
             );
         }
     }
-    
-    uint32_t numberOfRvaAndSizes = (((optionalHeader32->numberOfRvaAndSizes&255)&15)*16777216) + (((optionalHeader32->numberOfRvaAndSizes&255)>>4)*268435456) + ((((optionalHeader32->numberOfRvaAndSizes>>8)&255)&15)*65536) + ((((optionalHeader32->numberOfRvaAndSizes>>8)&255)>>4)*1048576) + (((optionalHeader32->numberOfRvaAndSizes>>16)&15)*256) + ((((optionalHeader32->numberOfRvaAndSizes>>16)&255)>>4)*4096) + (((optionalHeader32->numberOfRvaAndSizes>>24)&15)*1) + (((optionalHeader32->numberOfRvaAndSizes>>24)>>4)*16);
 
     printf("\n\n\n\nSection Headers\n---------------\n");
     for(size_t i=0;i<convert_WORD_To_uint16_t(coffHeader->numberOfSections);i++){
@@ -2006,6 +2012,7 @@ headers = curl_slist_append(headers, xAPIKey);
 curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, headers);
 
 CURLcode ret = curl_easy_perform(hnd);
+printf("Status Code: %d\n", ret);
 curl_easy_cleanup(hnd);
 curl_global_cleanup();
 
@@ -2188,7 +2195,7 @@ void parsePE32(FILE* pefile, struct switchList* psList){
     		initializeImportDescriptor32(imports32[i]);	
     	}
     	
-    	parseImports32(pefile, numID, diskOffset, numberOfSections, sectionHeader32, imports32);
+    	parseImports32(pefile, numID, diskOffset, imports32);
     	importsConsoleOutput32(pefile, numID, diskOffset, numberOfSections, sectionHeader32, imports32);
     	
     	free(tmpImports32);
@@ -2231,7 +2238,7 @@ void parsePE32(FILE* pefile, struct switchList* psList){
     	
     	initializeException32(exceptionCount, exception32);
     	parseException32(pefile, diskOffset, exceptionCount, exception32);
-    	exceptionConsoleOutput32(pefile, diskOffset, exceptionCount, exception32);
+    	exceptionConsoleOutput32(exceptionCount, exception32);
     	
     	free(exception32);
     }
@@ -2268,7 +2275,7 @@ void parsePE32(FILE* pefile, struct switchList* psList){
         }
         initializeCertificate32(certificateCount, certificate32);
         parseCertificate32(pefile, diskOffset, certificateCount, certificate32, optionalHeader32);
-        certificateConsoleOutput32(pefile, certificateCount, certificate32);
+        certificateConsoleOutput32(certificateCount, certificate32);
         free(certificate32);
     
     }
@@ -2289,7 +2296,7 @@ void parsePE32(FILE* pefile, struct switchList* psList){
      	
      	tmpDiskOffset += 8;
      	size_t baseRelocCount = 0;
-    	size_t typeCount = 0;
+    	uint32_t typeCount = 0;
     	
     	while((baseReloc32->pageRVA != 0) && (baseReloc32->blockSize != 0)){
     		baseRelocCount++;
@@ -2322,7 +2329,7 @@ void parsePE32(FILE* pefile, struct switchList* psList){
     	uint32_t diskOffset = convertRelativeAddressToDiskOffset(reverse_endianess_uint32_t(optionalHeader32->dataDirectory[6].virtualAddress), numberOfSections, sectionHeader32);
     	
     	parseDebug32(pefile, debugCount, diskOffset, debug32);
-    	debugConsoleOutput32(pefile, debugCount, diskOffset, debug32, sectionHeader32);
+    	debugConsoleOutput32(pefile, debugCount, debug32, sectionHeader32);
     	free(debug32);
     
     }
@@ -2353,14 +2360,14 @@ void parsePE32(FILE* pefile, struct switchList* psList){
     	uint32_t diskOffset = convertRelativeAddressToDiskOffset(reverse_endianess_uint32_t(optionalHeader32->dataDirectory[10].virtualAddress), numberOfSections, sectionHeader32);
     	
     	parseLoadConfig32(pefile, diskOffset, loadConfig32);
-    	loadConfigConsoleOutput32(pefile, loadConfig32);
+    	loadConfigConsoleOutput32(loadConfig32);
     	free(loadConfig32);
     }
     
     if(reverse_endianess_uint32_t(optionalHeader32->dataDirectory[11].virtualAddress) != 0){
     	struct IMAGE_BOUND_IMPORT_DESCRIPTOR32 tmpBounds32;
     	uint32_t tmpDiskOffset = convertRelativeAddressToDiskOffset(reverse_endianess_uint32_t(optionalHeader32->dataDirectory[11].virtualAddress), numberOfSections, sectionHeader32);
-    	size_t boundsCount = 0;
+    	uint32_t boundsCount = 0;
     	
     	tmpBounds32.timestamp = readDWord(pefile, tmpDiskOffset, DWORD_Buffer);
     	tmpBounds32.offsetModuleName = readWord(pefile, tmpDiskOffset+4, WORD_Buffer);
@@ -2397,7 +2404,7 @@ void parsePE32(FILE* pefile, struct switchList* psList){
     	
     	uint32_t diskOffset = convertRelativeAddressToDiskOffset(reverse_endianess_uint32_t(optionalHeader32->dataDirectory[11].virtualAddress), numberOfSections, sectionHeader32);
     	parseBoundImport32(pefile, diskOffset, boundsCount, bounds32);
-    	boundsConsoleOutput32(pefile, diskOffset, boundsCount, bounds32);
+    	boundsConsoleOutput32(boundsCount, bounds32);
     	
     	free(bounds32);
     }

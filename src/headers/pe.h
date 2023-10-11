@@ -62,7 +62,7 @@ uint64_t reverse_endianess_uint64_t(uint64_t value) {
 uint8_t readByte(FILE* pefile, size_t offset, uint8_t* buffer){
     size_t fReadSuccess;
 
-    if(fseek(pefile, offset, SEEK_SET))
+    if(fseek(pefile, (long) offset, SEEK_SET))
        perror("FATAL ERROR: Failed to seek to the specified file offset"); 
     else{
         fReadSuccess = fread(buffer, 0x01, 0x01, pefile); //buffer, size, count, stream
@@ -78,7 +78,7 @@ uint8_t readByte(FILE* pefile, size_t offset, uint8_t* buffer){
 uint16_t readWord(FILE* pefile, size_t offset, uint16_t* buffer){
     size_t fReadSuccess;
 
-    if(fseek(pefile, offset, SEEK_SET))
+    if(fseek(pefile, (long) offset, SEEK_SET))
        perror("FATAL ERROR: Failed to seek to the specified file offset"); 
     else{
         fReadSuccess = fread(buffer, 0x01, 0x02, pefile); //buffer, size, count, stream
@@ -94,7 +94,7 @@ uint16_t readWord(FILE* pefile, size_t offset, uint16_t* buffer){
 uint32_t readDWord(FILE* pefile, size_t offset, uint32_t* buffer){
     size_t fReadSuccess;
 
-    if(fseek(pefile, offset, SEEK_SET))
+    if(fseek(pefile, (long) offset, SEEK_SET))
        perror("FATAL ERROR: Failed to seek to the specified file offset"); 
     else{
         fReadSuccess = fread(buffer, 0x01, 0x04, pefile); //buffer, size, count, stream
@@ -110,7 +110,7 @@ uint32_t readDWord(FILE* pefile, size_t offset, uint32_t* buffer){
 uint64_t readQWord(FILE* pefile, size_t offset, uint64_t* buffer){
     size_t fReadSuccess;
 
-    if(fseek(pefile, offset, SEEK_SET))
+    if(fseek(pefile, (long) offset, SEEK_SET))
        perror("FATAL ERROR: Failed to seek to the specified file offset"); 
     else{
         fReadSuccess = fread(buffer, 0x01, 0x08, pefile); //buffer, size, count, stream
