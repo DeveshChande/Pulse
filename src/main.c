@@ -1,13 +1,9 @@
-#include <cmocka.h>
 #include <stdio.h>
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <headers/pe32.h>
 #include <headers/pe64.h>
-
-#include "tests/test_fileOperations.h"
 
 int main(int argc, char* argv[]){
     clock_t t = clock();
@@ -32,17 +28,6 @@ int main(int argc, char* argv[]){
     	perror("Failed to allocate memory for switchList");
     	return -1;
     }
-    
-    #ifdef DEBUG
-    const struct CMUnitTest test[] = {
-    	cmocka_unit_test(test_reverse_endianess_uint8_t),
-    	cmocka_unit_test(test_reverse_endianess_uint16_t),
-    	cmocka_unit_test(test_reverse_endianess_uint32_t),
-    	cmocka_unit_test(test_reverse_endianess_uint64_t)
-    };
-    
-    return cmocka_run_group_tests(tests, NULL, NULL);
-    #endif
     
 
     size_t argCount = 0;
@@ -128,9 +113,6 @@ int main(int argc, char* argv[]){
     t = clock() - t;
     double time_taken = ((double)t)/CLOCKS_PER_SEC;
     printf("\n\nParsing took %f seconds to execute.\n", time_taken);
-    
-    (void) argc;
-    (void) argv;
 
     return 0;
 }
