@@ -1945,7 +1945,7 @@ char* computeSHA1Hash32(FILE* pefile, char* sha1HashValue){
             sha1HashValue[j++] = tmp[1];
     }
     
-    sha1HashValue[42] = '\0';
+    sha1HashValue[40] = '\0';
     EVP_MD_CTX_free(sha1mdctx);
     return sha1HashValue;
     
@@ -2414,11 +2414,11 @@ void parsePE32(FILE* pefile, struct switchList* psList){
         if(md5HashValue == NULL){
         	perror("Unable to allocate memory for md5HashValue");
         }
-        char* sha1HashValue = malloc(42 * sizeof(char));
+        char* sha1HashValue = malloc(41 * sizeof(char));
         if(sha1HashValue == NULL){
         	perror("Unable to allocate memory for sha1HashValue");
         }
-        char* sha256HashValue = malloc(64 * sizeof(char));
+        char* sha256HashValue = malloc(65 * sizeof(char));
         if(sha256HashValue == NULL){
         	perror("Unable to allocate memory for sha256HashValue");
         }
