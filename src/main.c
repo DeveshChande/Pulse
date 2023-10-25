@@ -7,8 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <cmocka.h>
-#include "../src/headers/pe32.h"
-#include "../src/headers/pe64.h"
+
+#include "../src/headers/pe.c"
+#include "../src/headers/pe32.c"
+#include "../src/headers/pe64.c"
 #include "../tests/test_fileOperations.h"
 
 #define OPTSTR "-:"
@@ -19,7 +21,6 @@ int main(int argc, char* argv[]){
     static int f_exportResult = 0;
     static int f_extractResources = 0;
     static int f_extractStrings = 0;
-    static int f_vtLookup = 0;
     static int f_urlLookup = 0;
     static int f_shodanLookup = 0;
     static int f_dnsLookup = 0;
@@ -30,7 +31,7 @@ int main(int argc, char* argv[]){
         {"directory", optional_argument, NULL, 0},
         {"exportResult", no_argument, &f_exportResult, 1},
         {"extractStrings", no_argument, &f_extractStrings, 1},
-        {"vtLookup", no_argument, &f_vtLookup, 1},
+        {"vtLookup", required_argument, NULL, 0},
         {"urlLookup", no_argument, &f_urlLookup, 1},
         {"shodanLookup", no_argument, &f_shodanLookup, 1},
         {"computeHash", no_argument, &f_computeHash, 1},
@@ -95,8 +96,9 @@ int main(int argc, char* argv[]){
                 else if(f_extractStrings){
                     psList->extractStrings = true;
                 }
-                else if(f_vtLookup){
+                else if(!strcmp(long_options[opt_index].name, "vtLookup")){
                     psList->vtLookup = true;
+                    psList->vtAPIKey = optarg;
                 }
                 else if(f_urlLookup){
                     psList->urlLookup = true;

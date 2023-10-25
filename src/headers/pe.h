@@ -1,3 +1,61 @@
+#include <stdint.h>
+#include <openssl/evp.h>
+#include <curl/curl.h>
+
+#ifndef PE_CF
+#define PE_CF
+
+// Typedef definitions
+
+typedef uint8_t BYTE;
+typedef uint16_t WORD;
+typedef uint32_t DWORD;
+typedef uint64_t QWORD;
+typedef BYTE *LPBYTE;
+typedef WORD *PDWORD;
+
+// Common structures for PE32 and PE32+.
+struct IMAGE_DOS_HEADER{
+    WORD e_magic;
+    WORD e_cblp;
+    WORD e_cp;
+    WORD e_crlc;
+    WORD e_cparhdr;
+    WORD e_minalloc;
+    WORD e_maxalloc;
+    WORD e_ss;
+    WORD e_sp;
+    WORD e_csum;
+    WORD e_ip;
+    WORD e_cs;
+    WORD e_lfarlc;
+    WORD e_ovno;
+    WORD e_res[4];
+    WORD e_oemid;
+    WORD e_oeminfo;
+    WORD e_res2[10];
+    DWORD e_lfanew;
+};
+
+struct IMAGE_COFF_HEADER{
+    DWORD peSignature;
+    WORD machine;
+    WORD numberOfSections;
+    DWORD timeDateStamp;
+    DWORD pointerToSymbolTable;
+    DWORD numberOfSymbols;
+    WORD sizeOfOptionalHeader;
+    WORD characteristics;
+    char* machineArchitecture;
+    char** characteristicsList;
+};
+
+struct EXPORT_DATA_DIRECTORY{
+    DWORD virtualAddress;
+    DWORD size;
+};
+
+// Common functions used for reading PE32 and PE32+ files.
 extern uint8_t reverse_endianess_uint8_t(uint8_t value);
 extern uint16_t reverse_endianess_uint16_t(uint16_t value);
 extern uint32_t reverse_endianess_uint32_t(uint32_t value);
@@ -7,118 +65,16 @@ extern uint16_t readWord(FILE* pefile, size_t offset, uint16_t* buffer);
 extern uint32_t readDWord(FILE* pefile, size_t offset, uint32_t* buffer);
 extern uint64_t readQWord(FILE* pefile, size_t offset, uint64_t* buffer);
 
-uint8_t reverse_endianess_uint8_t(uint8_t value){
-    uint8_t resultat = 0;
-    char *source, *destination;
-    uint8_t i;
+// Common functions used for parsing PE32 and PE32+ structures.
+extern void initializeMSDOSHeader(struct IMAGE_DOS_HEADER* msDOSHeader);
+extern void initializeCoffHeader(struct IMAGE_COFF_HEADER* coffHeader);
+extern void parseMSDOSHeader(FILE* pefile, struct IMAGE_DOS_HEADER* msDOSHeader);
+extern void parseCoffHeader(FILE* pefile, uint32_t elfanew, struct IMAGE_COFF_HEADER* coffHeader);
 
-    source = (char *) &value;
-    destination = ((char *) &resultat) + sizeof(uint8_t);
-    for (i = 0; i < sizeof(uint8_t); i++)
-        *(--destination) = *(source++);
+// Common functions used for analyzing PE32 and PE32+ files.
+extern char* computeMD5Hash(FILE* pefile, char* md5HashValue);
+extern char* computeSHA1Hash(FILE* pefile, char* sha1HashValue);
+extern char* computeSHA256Hash(FILE* pefile, char* sha256HashValue);
+extern void virusTotalResults(char* sha256HashValue, char* apiKey);
 
-    return resultat;
-}
-
-uint16_t reverse_endianess_uint16_t(uint16_t value) {
-    uint16_t resultat = 0;
-    char *source, *destination;
-    uint16_t i;
-
-    source = (char *) &value;
-    destination = ((char *) &resultat) + sizeof(uint16_t);
-    for (i = 0; i < sizeof(uint16_t); i++)
-        *(--destination) = *(source++);
-
-    return resultat;
-}
-
-uint32_t reverse_endianess_uint32_t(uint32_t value) {
-    uint32_t resultat = 0;
-    char *source, *destination;
-    uint32_t i;
-
-    source = (char *) &value;
-    destination = ((char *) &resultat) + sizeof(uint32_t);
-    for (i = 0; i < sizeof(uint32_t); i++)
-        *(--destination) = *(source++);
-
-    return resultat;
-}
-
-uint64_t reverse_endianess_uint64_t(uint64_t value) {
-    uint64_t resultat = 0;
-    char *source, *destination;
-    uint64_t i;
-
-    source = (char *) &value;
-    destination = ((char *) &resultat) + sizeof(uint64_t);
-    for (i = 0; i < sizeof(uint64_t); i++)
-        *(--destination) = *(source++);
-        
-    return resultat;
-}
-
-uint8_t readByte(FILE* pefile, size_t offset, uint8_t* buffer){
-    size_t fReadSuccess;
-
-    if(fseek(pefile, (long) offset, SEEK_SET))
-       perror("FATAL ERROR: Failed to seek to the specified file offset"); 
-    else{
-        fReadSuccess = fread(buffer, 0x01, 0x01, pefile); //buffer, size, count, stream
-        if(fReadSuccess == 0x01)
-            return reverse_endianess_uint8_t(*buffer);
-        else
-            perror("FATAL ERROR: Failed to read appropriate countOfObjects in readByte");
-    }
-
-    return 0;
-}
-
-uint16_t readWord(FILE* pefile, size_t offset, uint16_t* buffer){
-    size_t fReadSuccess;
-
-    if(fseek(pefile, (long) offset, SEEK_SET))
-       perror("FATAL ERROR: Failed to seek to the specified file offset"); 
-    else{
-        fReadSuccess = fread(buffer, 0x01, 0x02, pefile); //buffer, size, count, stream
-        if(fReadSuccess == 0x02)
-            return reverse_endianess_uint16_t(*buffer);
-        else
-            perror("FATAL ERROR: Failed to read appropriate countOfObjects in readWord");
-    }
-
-    return 0;
-}
-
-uint32_t readDWord(FILE* pefile, size_t offset, uint32_t* buffer){
-    size_t fReadSuccess;
-
-    if(fseek(pefile, (long) offset, SEEK_SET))
-       perror("FATAL ERROR: Failed to seek to the specified file offset"); 
-    else{
-        fReadSuccess = fread(buffer, 0x01, 0x04, pefile); //buffer, size, count, stream
-        if(fReadSuccess == 0x04)
-            return reverse_endianess_uint32_t(*buffer);
-        else
-            perror("FATAL ERROR: Failed to read appropriate countOfObjects in readDWord");
-    }
-
-    return 0;
-}
-
-uint64_t readQWord(FILE* pefile, size_t offset, uint64_t* buffer){
-    size_t fReadSuccess;
-
-    if(fseek(pefile, (long) offset, SEEK_SET))
-       perror("FATAL ERROR: Failed to seek to the specified file offset"); 
-    else{
-        fReadSuccess = fread(buffer, 0x01, 0x08, pefile); //buffer, size, count, stream
-        if(fReadSuccess == 0x08)
-            return reverse_endianess_uint64_t(*buffer);
-        else
-            perror("FATAL ERROR: Failed to read appropriate countOfObjects in readQWord");
-    }
-
-    return 0;
-}
+#endif
