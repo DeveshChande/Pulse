@@ -1,3 +1,4 @@
+#include <getopt.h>
 #include <setjmp.h>
 #include <stdarg.h>
 #include <stdbool.h>
@@ -10,15 +11,44 @@
 #include "../src/headers/pe64.h"
 #include "../tests/test_fileOperations.h"
 
+#define OPTSTR "-:"
+
 int main(int argc, char* argv[]){
+    int opt_index = 0;
+    int opt = 0;
+    static int f_exportResult = 0;
+    static int f_extractResources = 0;
+    static int f_extractStrings = 0;
+    static int f_vtLookup = 0;
+    static int f_urlLookup = 0;
+    static int f_shodanLookup = 0;
+    static int f_dnsLookup = 0;
+    static int f_computeHash = 0;
+    static int f_capabilityDetection = 0;
+    static struct option long_options[] = {
+        {"file", optional_argument, NULL, 0},
+        {"directory", optional_argument, NULL, 0},
+        {"exportResult", no_argument, &f_exportResult, 1},
+        {"extractStrings", no_argument, &f_extractStrings, 1},
+        {"vtLookup", no_argument, &f_vtLookup, 1},
+        {"urlLookup", no_argument, &f_urlLookup, 1},
+        {"shodanLookup", no_argument, &f_shodanLookup, 1},
+        {"computeHash", no_argument, &f_computeHash, 1},
+        {"capabilityDetection", no_argument, &f_capabilityDetection, 1},
+        {NULL, 0, NULL, 0}
+    };
+
+    if(argc == 1){
+        fprintf(stderr, "ERROR: Please enter the appropriate command-line options.\n");
+    }
     clock_t t = clock();
     struct switchList* psList = malloc(sizeof(struct switchList));
     
     if(psList != NULL){
     	psList->fileSpecified = true;
-    	psList->pathOfFileSpecified = "/test/samples/ChromeSetup.exe";
+    	psList->pathOfFileSpecified = "";
     	psList->directorySpecified = true;
-    	psList->pathOfDirectorySpecified = "/test/samples/";
+    	psList->pathOfDirectorySpecified = "";
     	psList->exportResult = false;
     	psList->extractResources = false;
     	psList->extractStrings = false;
@@ -30,8 +60,8 @@ int main(int argc, char* argv[]){
     	psList->capabilityDetection = false;
     }
     else{
-    	perror("Failed to allocate memory for switchList");
-    	return -1;
+    	fprintf(stderr, "Failed %s in file %s at line #%d\n", __FUNCTION__, __FILE__, __LINE__);
+    	exit(EXIT_FAILURE);
     }
     
     #ifdef DEBUG
@@ -45,55 +75,62 @@ int main(int argc, char* argv[]){
     return cmocka_run_group_tests(tests, NULL, NULL);
     #endif
     
-
-    int argCount = 0;
-    for(argCount=1; argCount<argc; argCount++){
-        if(!strcmp(argv[argCount], "--path")){
-            psList->fileSpecified = true;
-            psList->pathOfFileSpecified = argv[argCount+1];
-            argCount++;
+    while((opt = getopt_long(argc, argv, OPTSTR, long_options, &opt_index)) != -1){
+        switch(opt){
+            case 0:
+                if(!strcmp(long_options[opt_index].name, "file")){
+                    psList->fileSpecified = true;
+                    psList->pathOfFileSpecified = optarg;
+                }
+                else if(!strcmp(long_options[opt_index].name, "directory")){
+                    psList->directorySpecified = true;
+                    psList->pathOfDirectorySpecified = optarg;
+                }
+                else if(f_exportResult){
+                    psList->exportResult = true;
+                }
+                else if(f_extractResources){
+                    psList->extractResources = true;
+                }
+                else if(f_extractStrings){
+                    psList->extractStrings = true;
+                }
+                else if(f_vtLookup){
+                    psList->vtLookup = true;
+                }
+                else if(f_urlLookup){
+                    psList->urlLookup = true;
+                }
+                else if(f_shodanLookup){
+                    psList->shodanLookup = true;
+                }
+                else if(f_dnsLookup){
+                    psList->dnsLookup = true;
+                }
+                else if(f_computeHash){
+                    psList->computeHash = true;
+                }
+                else if(f_capabilityDetection){
+                    psList->capabilityDetection = true;
+                }
+                else{
+                    ;
+                }
+                break;
+            case 1:
+                printf("Regular argument: %s\n", optarg);
+                break;
+            case '?':
+                printf("Unknown option: %s\n", argv[optind-1]);
+                break;
+            case ':':
+                printf("Missing argument for %s\n", optarg);
+                break;
+            default:
+                printf("?? getopt returned character code 0%o ??\n", opt);
+                break;
         }
-
-        if(!strcmp(argv[argCount], "--directory")){
-            psList->directorySpecified = true;
-            psList->pathOfDirectorySpecified = argv[argCount+1];
-            argCount++;
-        }
-        
-        if(!strcmp(argv[argCount], "--exportResult"))
-            psList->exportResult = true;
-
-        if(!strcmp(argv[argCount], "--extractResources"))
-            psList->extractResources = true;
-
-        if(!strcmp(argv[argCount], "--extractStrings"))
-            psList->extractStrings = true;
-
-        if(!strcmp(argv[argCount], "--vtLookup"))
-            psList->vtLookup = true;
-
-        if(!strcmp(argv[argCount], "--urlLookup"))
-            psList->urlLookup = true;
-
-        if(!strcmp(argv[argCount], "--shodanLookup"))
-            psList->shodanLookup = true;
-
-        if(!strcmp(argv[argCount], "--dnsLookup"))
-            psList->dnsLookup = true;
-
-        if(!strcmp(argv[argCount], "--computeHash"))
-            psList->computeHash = true;
-
-        if(!strcmp(argv[argCount], "--capabilityDetection"))
-            psList->capabilityDetection = true;
     }
-    
- 
-    if(!psList->fileSpecified){
-    	perror("No file specified. Terminating.\n");
-    	return -1;
-    }
-    	
     
     FILE* pefile = fopen(psList->pathOfFileSpecified, "rb");
     
@@ -111,7 +148,7 @@ int main(int argc, char* argv[]){
                 parsePE64(pefile, psList);
                 break;
             default:
-                printf("ERROR: Unsupported type of image.\n\n");
+                printf("Error: Unsupported image type.\n\n");
                 break;
         }
 
@@ -119,8 +156,8 @@ int main(int argc, char* argv[]){
         free(DWORD_Buffer);
     }  
     else{
-        perror("Failed call to fopen()");
-        return -1;
+        fprintf(stderr, "Error: Failed call to fopen(\"%s\", \"rb\") from %s at line #%d\n", psList->pathOfFileSpecified, __FILE__, __LINE__);
+        exit(EXIT_FAILURE);
     }
     
     fclose(pefile);
@@ -133,5 +170,5 @@ int main(int argc, char* argv[]){
     (void) argc;
     (void) argv;
 
-    return 0;
+    exit(EXIT_SUCCESS);
 }
