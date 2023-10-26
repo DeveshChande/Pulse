@@ -137,12 +137,6 @@ struct IMAGE_RESOURCE_DIRECTORY_ENTRY_DATA64{
     DWORD reserved;
 };
 
-struct IMAGE_EXCEPTION64{
-    DWORD startAddress;
-    DWORD endAddress;
-    DWORD unwindAddress;
-};
-
 struct EXCEPTION_DATA_DIRECTORY64{
     DWORD virtualAddress;
     DWORD size;
@@ -152,78 +146,6 @@ struct IMAGE_CERTIFICATE64{
 	DWORD dwLength;
 	WORD wRevision;
 	WORD wCertificateType;
-};
-
-//Base Relocation Types
-#define IMAGE_REL_BASED_ABSOLUTE 0
-#define IMAGE_REL_BASED_HIGH 1
-#define IMAGE_REL_BASED_LOW 2
-#define IMAGE_REL_BASED_HIGHLOW 3
-#define IMAGE_REL_BASED_HIGHADJ 4
-#define IMAGE_REL_BASED_MIPS_JMPADDR 5
-#define IMAGE_REL_BASED_ARM_MOV32 5
-#define IMAGE_REL_BASED_RISCV_HIGH20 5
-#define IMAGE_REL_BASED_THUMB_MOV32 7
-#define IMAGE_REL_BASED_RISCV_LOW12I 7
-#define IMAGE_REL_BASED_RISCV_LOW12S 8
-#define IMAGE_REL_BASED_LOONGARCH32_MARK_LA 8
-#define IMAGE_REL_BASED_LOONGARCH64_MARK_LA 8
-#define IMAGE_REL_BASED_MIPS_JMPADDR16 9
-#define IMAGE_REL_BASED_DIR64 10
-
-struct IMAGE_BASE_RELOCATION64{
-  DWORD pageRVA;
-  DWORD blockSize;
-};
-
-// Debug Type
-#define IMAGE_DEBUG_TYPE_UNKNOWN          0
-#define IMAGE_DEBUG_TYPE_COFF             1
-#define IMAGE_DEBUG_TYPE_CODEVIEW         2
-#define IMAGE_DEBUG_TYPE_FPO              3
-#define IMAGE_DEBUG_TYPE_MISC             4
-#define IMAGE_DEBUG_TYPE_EXCEPTION        5
-#define IMAGE_DEBUG_TYPE_FIXUP            6
-#define IMAGE_DEBUG_TYPE_OMAP_TO_SRC      7
-#define IMAGE_DEBUG_TYPE_OMAP_FROM_SRC    8
-#define IMAGE_DEBUG_TYPE_BORLAND          9
-#define IMAGE_DEBUG_TYPE_RESERVED10       10
-#define IMAGE_DEBUG_TYPE_CLSID            11
-#define IMAGE_DEBUG_TYPE_VC_FEATURE       12
-#define IMAGE_DEBUG_TYPE_POGO             13
-#define IMAGE_DEBUG_TYPE_ILTCG            14
-#define IMAGE_DEBUG_TYPE_MPX              15
-#define IMAGE_DEBUG_TYPE_REPRO            16
-
-struct IMAGE_DEBUG_DIRECTORY64{
-  DWORD characteristics;
-  DWORD timeDateStamp;
-  WORD  majorVersion;
-  WORD  minorVersion;
-  DWORD type;
-  DWORD sizeOfData;
-  DWORD addressOfRawData;
-  DWORD pointerToRawData;
-};
-
-struct CV_HEADER64{
-  DWORD Signature;
-  DWORD Offset;
-};
-
-struct CV_INFO_PDB20_64{
-  struct CV_HEADER64 header;
-  DWORD offset;
-  DWORD signature;
-  DWORD age;
-  BYTE pdbFileName;
-};
-
-struct CV_INFO_PDB70_64{
-  DWORD  cvSignature;
-  struct GUID signature;
-  DWORD age;
-  BYTE pdbFileName;
 };
 
 struct IMAGE_TLS_DIRECTORY64{
@@ -268,18 +190,6 @@ struct IMAGE_LOAD_CONFIG64{
     QWORD guardLongJumpTargetCount;
 };
 
-struct IMAGE_BOUND_IMPORT_DESCRIPTOR64{
-    DWORD timestamp;
-    WORD offsetModuleName;
-    WORD numberOfModuleForwarderRefs;
-};
-
-struct IMAGE_BOUND_FORWARDER_REF64{
-    DWORD timestamp;
-    WORD offsetModuleName;
-    WORD reserved;
-};
-
 struct ImgDelayDescr64{
     DWORD  grAttrs;
     DWORD  rvaDLLName;
@@ -291,58 +201,31 @@ struct ImgDelayDescr64{
     DWORD  dwTimeStamp;
 };
 
-struct SECTION_HEADER64{
-    QWORD name;
-    DWORD virtualSize;
-    DWORD virtualAddress;
-    DWORD sizeOfRawData;
-    DWORD pointerToRawData;
-    DWORD pointerToRelocations;
-    DWORD pointerToLineNumbers;
-    WORD numberOfRelocations;
-    WORD numberOfLineNumbers;
-    DWORD characteristics;
-};
-
 //Function declarations
-uint32_t convertRelativeAddressToDiskOffset64(uint32_t relativeAddress, uint16_t numberOfSections,  struct SECTION_HEADER64* sectionHeader64);
-uint64_t convertRelativeAddressToDiskOffset64_t(uint64_t relativeAddress, uint16_t numberOfSections,  struct SECTION_HEADER64* sectionHeader64);
+uint64_t convertRelativeAddressToDiskOffset64_t(uint64_t relativeAddress, uint16_t numberOfSections,  struct SECTION_HEADER* sectionHeader64);
 
 void initializeOptionalHeader64(struct IMAGE_OPTIONAL_HEADER64* optionalHeader64);
-void initializeSectionHeader64(uint16_t numberOfSections, struct SECTION_HEADER64* sectionHeader64);
 void initializeExportDirectory64(struct IMAGE_EXPORT_DIRECTORY64* exports64);
 void initializeImportDescriptor64(struct IMAGE_IMPORT_DESCRIPTOR64* importDescriptor);
-void initializeException64(size_t exceptionCount, struct IMAGE_EXCEPTION64* exception64);
 void initializeCertificate64(size_t certificateCount, struct IMAGE_CERTIFICATE64* certificate64);
-void initializeBaseReloc64(size_t baseRelocCount, struct IMAGE_BASE_RELOCATION64* baseReloc64);
-void initializeDebug64(size_t debugCount, struct IMAGE_DEBUG_DIRECTORY64* debug64);
+void initializeDebug64(size_t debugCount, struct IMAGE_DEBUG_DIRECTORY* debug64);
 void initializeTLS64(struct IMAGE_TLS_DIRECTORY64* tls64);
 void initializeLoadConfig64(struct IMAGE_LOAD_CONFIG64* loadConfig64);
-void initializeBoundImport64(uint32_t boundsCount, struct IMAGE_BOUND_IMPORT_DESCRIPTOR64* bounds64);
 
 void parsePE64(FILE* pefile, struct switchList* psList);
 void parseOptionalHeader64(FILE* pefile, uint32_t elfanew, struct IMAGE_OPTIONAL_HEADER64* optionalHeader64);
-void parseSectionHeaders64(FILE* pefile, uint16_t numberOfSections, uint32_t memoryOffset, struct SECTION_HEADER64* sectionHeader64);
-void parseExports64(FILE* pefile, uint32_t diskOffset, uint16_t numberOfSections, struct SECTION_HEADER64* sectionHeader64, struct IMAGE_EXPORT_DIRECTORY64* exports64, uint32_t* exportFunctionAddresses, uint32_t* exportFunctionNames, uint16_t* exportOrdinalAddresses);
+void parseExports64(FILE* pefile, uint32_t diskOffset, uint16_t numberOfSections, struct SECTION_HEADER* sectionHeader64, struct IMAGE_EXPORT_DIRECTORY64* exports64, uint32_t* exportFunctionAddresses, uint32_t* exportFunctionNames, uint16_t* exportOrdinalAddresses);
 void parseImports64(FILE* pefile, size_t numID, uint32_t diskOffset, struct IMAGE_IMPORT_DESCRIPTOR64** imports64);
 void parseResources64(FILE* pefile);
-void parseException64(FILE* pefile, uint32_t diskOffset, size_t exceptionCount, struct IMAGE_EXCEPTION64* exception64);
 void parseCertificate64(FILE* pefile, uint32_t diskOffset, size_t certificateCount, struct IMAGE_CERTIFICATE64* certificate64, struct IMAGE_OPTIONAL_HEADER64* optionalHeader64);
-void parseBaseReloc64(FILE* pefile, uint32_t diskOffset, size_t baseRelocCount, struct IMAGE_BASE_RELOCATION64* baseReloc64);
-void parseDebug64(FILE* pefile, size_t debugCount, uint32_t diskOffset, struct IMAGE_DEBUG_DIRECTORY64* debug64);
 void parseTLS64(FILE* pefile, uint32_t diskOffset, struct IMAGE_TLS_DIRECTORY64* tls64);
 void parseLoadConfig64(FILE* pefile, uint32_t diskOffset, struct IMAGE_LOAD_CONFIG64* loadConfig64);
-void parseBoundImport64(FILE* pefile, uint32_t diskOffset, uint32_t boundsCount, struct IMAGE_BOUND_IMPORT_DESCRIPTOR64* bounds64);
 
-void consoleOutput64(struct IMAGE_DOS_HEADER* msDOSHeader, struct IMAGE_COFF_HEADER* coffHeader, struct IMAGE_OPTIONAL_HEADER64* optionalHeader64, struct SECTION_HEADER64* sectionHeader64);
-void exportsConsoleOutput64(FILE* pefile, struct IMAGE_OPTIONAL_HEADER64* optionalHeader64, struct IMAGE_EXPORT_DIRECTORY64* exports64, uint32_t* exportFunctionAddresses, uint32_t* exportFunctionNames, uint16_t* exportOrdinalAddresses, uint16_t numberOfSections, struct SECTION_HEADER64* sectionHeader64);
-void importsConsoleOutput64(FILE* pefile, size_t numID, uint32_t diskOffset, uint16_t numberOfSections, struct SECTION_HEADER64* sectionHeader64, struct IMAGE_IMPORT_DESCRIPTOR64** imports64);
-void exceptionConsoleOutput64(size_t exceptionCount, struct IMAGE_EXCEPTION64* exception64);
+void consoleOutput64(struct IMAGE_DOS_HEADER* msDOSHeader, struct IMAGE_COFF_HEADER* coffHeader, struct IMAGE_OPTIONAL_HEADER64* optionalHeader64, struct SECTION_HEADER* sectionHeader64);
+void exportsConsoleOutput64(FILE* pefile, struct IMAGE_OPTIONAL_HEADER64* optionalHeader64, struct IMAGE_EXPORT_DIRECTORY64* exports64, uint32_t* exportFunctionAddresses, uint32_t* exportFunctionNames, uint16_t* exportOrdinalAddresses, uint16_t numberOfSections, struct SECTION_HEADER* sectionHeader64);
+void importsConsoleOutput64(FILE* pefile, size_t numID, uint32_t diskOffset, uint16_t numberOfSections, struct SECTION_HEADER* sectionHeader64, struct IMAGE_IMPORT_DESCRIPTOR64** imports64);
 void certificateConsoleOutput64(size_t certificateCount, struct IMAGE_CERTIFICATE64* certificate64);
-void baseRelocConsoleOutput64(FILE* pefile, uint32_t diskOffset, size_t baseRelocCount, struct IMAGE_BASE_RELOCATION64* baseReloc64);
-void debugConsoleOutput64(FILE* pefile, size_t debugCount, struct IMAGE_DEBUG_DIRECTORY64* debug64, struct SECTION_HEADER64* sectionHeader64);
 void tlsConsoleOutput64(struct IMAGE_TLS_DIRECTORY64* tls64);
 void loadConfigConsoleOutput64(struct IMAGE_LOAD_CONFIG64* loadConfig64);
-void boundsConsoleOutput64(uint32_t boundsCount, struct IMAGE_BOUND_IMPORT_DESCRIPTOR64* bounds64);
 
 #endif
