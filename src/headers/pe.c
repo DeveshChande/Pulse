@@ -271,84 +271,111 @@ void parseCoffHeader(FILE* file, uint32_t elfanew, struct IMAGE_COFF_HEADER* cof
     switch(reverse_endianess_uint16_t(coffHeader->machine)){
         case 0x0:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_UNKNOWN", 27);
+            coffHeader->machineArchitecture[26] = '\0';
             break;
         case 0x1d3:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_AM33", 24);
+            coffHeader->machineArchitecture[23] = '\0';
             break;
         case 0x8664:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_AMD64", 25);
+            coffHeader->machineArchitecture[24] = '\0';
             break;
         case 0x1c0:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_ARM", 24);
+            coffHeader->machineArchitecture[23] = '\0';
             break;
         case 0xaa64:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_ARM64", 25);
+            coffHeader->machineArchitecture[24] = '\0';
             break;
         case 0x1c4:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_ARMNT", 25);
+            coffHeader->machineArchitecture[24] = '\0';
             break;
         case 0xebc:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_EBC", 23);
+            coffHeader->machineArchitecture[22] = '\0';
             break;
         case 0x14c:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_I386", 24);
+            coffHeader->machineArchitecture[23] = '\0';
             break;
         case 0x200:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_IA64", 24);
+            coffHeader->machineArchitecture[23] = '\0';
             break;
         case 0x6232:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_LOONGARCH32", 31);
+            coffHeader->machineArchitecture[30] = '\0';
             break;
         case 0x6264:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_LOONGARCH64", 31);
+            coffHeader->machineArchitecture[30] = '\0';
             break;
         case 0x9041:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_M32R", 24);
+            coffHeader->machineArchitecture[23] = '\0';
             break;
         case 0x266:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_MIPS16", 26);
+            coffHeader->machineArchitecture[25] = '\0';
             break;
         case 0x366:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_MIPSFPU", 27);
+            coffHeader->machineArchitecture[26] = '\0';
             break;
         case 0x1f0:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_POWERPC", 27);
+            coffHeader->machineArchitecture[26] = '\0';
             break;
         case 0x1f1:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_POWERPCFP", 29);
+            coffHeader->machineArchitecture[28] = '\0';
             break;
         case 0x166:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_R4000", 25);
+            coffHeader->machineArchitecture[24] = '\0';
             break;
         case 0x5032:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_RISCV32", 27);
+            coffHeader->machineArchitecture[26] = '\0';
             break;
         case 0x5064:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_RISCV64", 27);
+            coffHeader->machineArchitecture[26] = '\0';
             break;
         case 0x5128:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_RISCV128", 28);
+            coffHeader->machineArchitecture[27] = '\0';
             break;
         case 0x1a2:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_SH3", 23);
+            coffHeader->machineArchitecture[22] = '\0';
             break;
         case 0x1a3:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_SH3DSP", 26);
+            coffHeader->machineArchitecture[25] = '\0';
             break;
         case 0x1a6:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_SH4", 23);
+            coffHeader->machineArchitecture[22] = '\0';
             break;
         case 0x1a8:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_SH5", 23);
+            coffHeader->machineArchitecture[22] = '\0';
             break;
         case 0x1c2:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_THUMB", 25);
+            coffHeader->machineArchitecture[24] = '\0';
             break;
         case 0x169:
             memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_WCEMIPSV2", 29);
+            coffHeader->machineArchitecture[28] = '\0';
             break;
         default:
             memcpy(coffHeader->machineArchitecture, "UNDEFINED_ARCHITECTURE_ANOMALY", 31);
+            coffHeader->machineArchitecture[30] = '\0';
             break;
     }
 
@@ -368,54 +395,71 @@ void parseCoffHeader(FILE* file, uint32_t elfanew, struct IMAGE_COFF_HEADER* cof
         switch(savedCharacteristics[i]){
             case 1:
                 memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_RELOCS_STRIPPED", 27);
+                (coffHeader->characteristicsList[i])[26] = '\0';
                 break;
             case 2:
                 memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_EXECUTABLE_IMAGE", 28);
+                (coffHeader->characteristicsList[i])[27] = '\0';
                 break;
             case 4:
-                memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_LINE_NUMS_STRIPPED", 29);
+                memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_LINE_NUMS_STRIPPED", 30);
+                (coffHeader->characteristicsList[i])[29] = '\0';
                 break;
             case 8:
                 memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_LOCAL_SYMS_STRIPPED", 31);
+                (coffHeader->characteristicsList[i])[30] = '\0';
                 break;
             case 16:
                 memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_AGGRESSIVE_WS_TRIM", 30);
+                (coffHeader->characteristicsList[i])[29] = '\0';
                 break;
             case 32:
                 memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_LARGE_ADDRESS_AWARE", 31);
+                (coffHeader->characteristicsList[i])[30] = '\0';
                 break;
             case 64:
                 memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_FUTURE_USE", 22);
+                (coffHeader->characteristicsList[i])[21] = '\0';
                 break;
             case 128:
                 memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_BYTES_REVERSED_LO", 29);
+                (coffHeader->characteristicsList[i])[28] = '\0';
                 break;
             case 256:
                 memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_32BIT_MACHINE", 25);
+                (coffHeader->characteristicsList[i])[24] = '\0';
                 break;
             case 512:
                 memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_DEBUG_STRIPPED", 26);
+                (coffHeader->characteristicsList[i])[25] = '\0';
                 break;
             case 1024:
                 memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_REMOVABLE_RUN_", 26);
+                (coffHeader->characteristicsList[i])[25] = '\0';
                 break;
             case 2048:
                 memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_NET_RUN_FROM_SWAP", 29);
+                (coffHeader->characteristicsList[i])[28] = '\0';
                 break;
             case 4096:
                 memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_SYSTEM", 18);
+                (coffHeader->characteristicsList[i])[17] = '\0';
                 break;
             case 8192:
                 memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_DLL", 15);
+                (coffHeader->characteristicsList[i])[14] = '\0';
                 break;
             case 16384:
                 memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_UP_SYSTEM_ONLY", 26);
+                (coffHeader->characteristicsList[i])[25] = '\0';
                 break;
             case 32768:
                 memcpy(coffHeader->characteristicsList[i], "IMAGE_FILE_BYTES_REVERSED_HI", 29);
+                (coffHeader->characteristicsList[i])[28] = '\0';
                 break;
             default:
                 memcpy(coffHeader->characteristicsList[i], "UNKNOWN_CHARACTERISTICS_ANOMALY", 32);
+                (coffHeader->characteristicsList[i])[31] = '\0';
                 break;
         }
     }

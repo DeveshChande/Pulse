@@ -16,6 +16,18 @@
 #define OPTSTR "-:"
 
 int main(int argc, char* argv[]){
+
+    #ifdef DEBUG
+    const struct CMUnitTest tests[] = {
+    	cmocka_unit_test(test_reverse_endianess_uint8_t),
+    	cmocka_unit_test(test_reverse_endianess_uint16_t),
+    	cmocka_unit_test(test_reverse_endianess_uint32_t),
+    	cmocka_unit_test(test_reverse_endianess_uint64_t)
+    };
+    
+    return cmocka_run_group_tests(tests, NULL, NULL);
+    #endif
+    
     int opt_index = 0;
     int opt = 0;
     static int f_exportResult = 0;
@@ -65,16 +77,7 @@ int main(int argc, char* argv[]){
     	exit(EXIT_FAILURE);
     }
     
-    #ifdef DEBUG
-    const struct CMUnitTest test[] = {
-    	cmocka_unit_test(test_reverse_endianess_uint8_t),
-    	cmocka_unit_test(test_reverse_endianess_uint16_t),
-    	cmocka_unit_test(test_reverse_endianess_uint32_t),
-    	cmocka_unit_test(test_reverse_endianess_uint64_t)
-    };
     
-    return cmocka_run_group_tests(tests, NULL, NULL);
-    #endif
     
     while((opt = getopt_long(argc, argv, OPTSTR, long_options, &opt_index)) != -1){
         switch(opt){

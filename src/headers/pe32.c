@@ -378,7 +378,7 @@ void importsConsoleOutput32(FILE* pefile, size_t numID, uint32_t diskOffset, uin
 	uint8_t* BYTE_Buffer = calloc(1, sizeof(uint8_t));
 	uint32_t* DWORD_Buffer = calloc(4, sizeof(uint8_t));
 	
-	printf("IMPORT INFORMATION\n-----------------------------------\n\n");
+	printf("\n\nIMPORT INFORMATION\n-----------------------------------\n\n");
 	
 	for(size_t i=0;i<numID;i++){
 		if(!((imports32[i]->u.OriginalFirstThunk.u1.ordinal == 0) && (imports32[i]->timeDateStamp == 0) && (imports32[i]->forwarderChain == 0) && (imports32[i]->name == 0) && (imports32[i]->FirstThunk.u1.addressOfData == 0))){
@@ -822,7 +822,8 @@ void parsePE32(FILE* pefile, struct switchList* psList){
     }
     
     memcpy(coffHeader->machineArchitecture, "INITIALIZATION_VALUE", 21);
-    
+    coffHeader->machineArchitecture[21] = '\0';
+
     coffHeader->characteristicsList = malloc(17 * sizeof(char*));
     if(coffHeader->characteristicsList == NULL){
     	perror("Failed to allocate memory for coffHeader->characteristicsList structure");
@@ -836,6 +837,8 @@ void parsePE32(FILE* pefile, struct switchList* psList){
     		return;
     	}
     	memcpy(coffHeader->characteristicsList[i], "INITIALIZATION_VALUE", 21);
+        (coffHeader->characteristicsList[i])[21] = '\0';
+        printf("Allocated string %zu\n", i);
     }
     	
     struct IMAGE_OPTIONAL_HEADER32* optionalHeader32 = malloc(sizeof(struct IMAGE_OPTIONAL_HEADER32));
@@ -851,6 +854,7 @@ void parsePE32(FILE* pefile, struct switchList* psList){
     	return;
     }
     memcpy(optionalHeader32->subsystemType, "SUBSYSTEM_INITIALIZATION_VALUE", 31);
+    optionalHeader32->subsystemType[31] = '\0';
     
     optionalHeader32->dllCharacteristicsList = malloc(16 * sizeof(char*));
     if(optionalHeader32->dllCharacteristicsList == NULL){
@@ -865,6 +869,7 @@ void parsePE32(FILE* pefile, struct switchList* psList){
     		return;
     	}
     	memcpy(optionalHeader32->dllCharacteristicsList[i], "DLL_INITIALIZATION_VALUE", 21);
+        (optionalHeader32->dllCharacteristicsList[i])[21] = '\0';
     }
     
 
@@ -1220,8 +1225,14 @@ void parsePE32(FILE* pefile, struct switchList* psList){
     	free(sha256HashValue);
     }
     	
-    for(size_t i=0;i<17;i++)
-    	free(coffHeader->characteristicsList[i]);
+    for(size_t i=0;i<17;i++){
+        printf("String value: %s\n", coffHeader->characteristicsList[i]);
+    }
+    
+    for(size_t i=0;i<17;i++){
+        printf("Freeing string %zu\n", i);
+        free(coffHeader->characteristicsList[i]);
+    }
     	
     for(size_t i=0;i<16;i++)
     	free(optionalHeader32->dllCharacteristicsList[i]);
