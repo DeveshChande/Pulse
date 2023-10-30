@@ -22,7 +22,16 @@ int main(int argc, char* argv[]){
     	cmocka_unit_test(test_reverse_endianess_uint8_t),
     	cmocka_unit_test(test_reverse_endianess_uint16_t),
     	cmocka_unit_test(test_reverse_endianess_uint32_t),
-    	cmocka_unit_test(test_reverse_endianess_uint64_t)
+    	cmocka_unit_test(test_reverse_endianess_uint64_t),
+        cmocka_unit_test(test_readByte),
+        cmocka_unit_test(test_readWord),
+        cmocka_unit_test(test_readDWord),
+        cmocka_unit_test(test_readQWord),
+        cmocka_unit_test(test_convert_WORD_To_uint16_t),
+        cmocka_unit_test(test_convert_DWORD_To_uint32_t),
+        cmocka_unit_test(test_hexdigit2int),
+        cmocka_unit_test(test_convert_uint64_t_ToString),
+        cmocka_unit_test(test_convertRelativeAddressToDiskOffset)
     };
     
     return cmocka_run_group_tests(tests, NULL, NULL);

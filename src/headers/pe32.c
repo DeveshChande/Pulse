@@ -902,7 +902,6 @@ void parsePE32(FILE* pefile, struct switchList* psList){
         initializeExportDirectory32(exports32);
         
         uint32_t diskOffset = convertRelativeAddressToDiskOffset(reverse_endianess_uint32_t(optionalHeader32->dataDirectory[0].virtualAddress), numberOfSections, sectionHeader32);
-        
         uint32_t* exportFunctionAddresses = calloc(reverse_endianess_uint32_t(readDWord(pefile, diskOffset+20, DWORD_Buffer)), sizeof(uint32_t));
         if(exportFunctionAddresses == NULL){
     		perror("Failed to allocate memory for exportFunctionAddresses structure\n");
