@@ -223,33 +223,36 @@ void parseMSDOSHeader(FILE* pefile, struct IMAGE_DOS_HEADER* msDOSHeader){
     uint32_t* DWORD_Buffer = calloc(4, sizeof(uint8_t));
     size_t j = 0;
 
-    msDOSHeader->e_magic = readWord(pefile, 0x00, WORD_Buffer);
-    msDOSHeader->e_cblp = readWord(pefile, 0x02, WORD_Buffer);
-    msDOSHeader->e_cp = readWord(pefile, 0x04, WORD_Buffer);
-    msDOSHeader->e_crlc = readWord(pefile, 0x06, WORD_Buffer);
-    msDOSHeader->e_cparhdr = readWord(pefile, 0x08, WORD_Buffer);
-    msDOSHeader->e_minalloc = readWord(pefile, 0x0A, WORD_Buffer);
-    msDOSHeader->e_maxalloc = readWord(pefile, 0x0C, WORD_Buffer);
-    msDOSHeader->e_ss = readWord(pefile, 0x0E, WORD_Buffer);
-    msDOSHeader->e_sp = readWord(pefile, 0x10, WORD_Buffer);
-    msDOSHeader->e_csum = readWord(pefile, 0x12, WORD_Buffer);
-    msDOSHeader->e_ip = readWord(pefile, 0x14, WORD_Buffer);
-    msDOSHeader->e_cs = readWord(pefile, 0x16, WORD_Buffer);
-    msDOSHeader->e_lfarlc = readWord(pefile, 0x18, WORD_Buffer);
-    msDOSHeader->e_ovno = readWord(pefile, 0x1A, WORD_Buffer);
+    msDOSHeader->e_magic = readWord(pefile, 2, WORD_Buffer);
+    msDOSHeader->e_cblp = readWord(pefile, 4, WORD_Buffer);
+    msDOSHeader->e_cp = readWord(pefile, 6, WORD_Buffer);
+    msDOSHeader->e_crlc = readWord(pefile, 9, WORD_Buffer);
+    msDOSHeader->e_cparhdr = readWord(pefile, 10, WORD_Buffer);
+    msDOSHeader->e_minalloc = readWord(pefile, 12, WORD_Buffer);
+    msDOSHeader->e_maxalloc = readWord(pefile, 14, WORD_Buffer);
+    msDOSHeader->e_ss = readWord(pefile, 16, WORD_Buffer);
+    msDOSHeader->e_sp = readWord(pefile, 18, WORD_Buffer);
+    msDOSHeader->e_csum = readWord(pefile, 20, WORD_Buffer);
+    msDOSHeader->e_ip = readWord(pefile, 22, WORD_Buffer);
+    msDOSHeader->e_cs = readWord(pefile, 24, WORD_Buffer);
+    msDOSHeader->e_lfarlc = readWord(pefile, 26, WORD_Buffer);
+    msDOSHeader->e_ovno = readWord(pefile, 28, WORD_Buffer);
     
-    for(size_t i=0x1C;i<0x24;i+=0x02){
-        msDOSHeader->e_res[j++] = readWord(pefile, i, WORD_Buffer);
+    for(size_t i=28;i<=34;i+=2){
+        msDOSHeader->e_res[j] = readWord(pefile, i, WORD_Buffer);
+        j++;
     }
 
-    msDOSHeader->e_oemid = readWord(pefile, 0x24, WORD_Buffer);
+    msDOSHeader->e_oemid = readWord(pefile, 36, WORD_Buffer);
+    msDOSHeader->e_oeminfo = readWord(pefile, 38, WORD_Buffer);
     
     j=0;
-    for(size_t i=0x26;i<0x3C;i+=0x02){
-        msDOSHeader->e_res2[j++] = readWord(pefile, i, WORD_Buffer);
+    for(size_t i=40;i<=58;i+=2){
+        msDOSHeader->e_res2[j] = readWord(pefile, i, WORD_Buffer);
+        j++;
     }
 
-    msDOSHeader->e_lfanew = readDWord(pefile, 0x3C, DWORD_Buffer);
+    msDOSHeader->e_lfanew = readDWord(pefile, 60, DWORD_Buffer);
 
     free(WORD_Buffer);
     free(DWORD_Buffer);
@@ -282,7 +285,7 @@ void parseCoffHeader(FILE* file, uint32_t elfanew, struct IMAGE_COFF_HEADER* cof
             coffHeader->machineArchitecture[24] = '\0';
             break;
         case 0x1c0:
-            memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_ARM", 24);
+            memcpy(coffHeader->machineArchitecture, "IMAGE_FILE_MACHINE_ARM", 23);
             coffHeader->machineArchitecture[23] = '\0';
             break;
         case 0xaa64:
@@ -562,6 +565,10 @@ void parseBoundImport(FILE* pefile, uint32_t diskOffset, uint32_t boundsCount, s
     		
     	if(bounds[i].numberOfModuleForwarderRefs != 0){
     		struct IMAGE_BOUND_FORWARDER_REF tmpForwards;
+            tmpForwards.timestamp = 1;
+            tmpForwards.offsetModuleName = 1;
+            tmpForwards.reserved= 1;
+
     		while((tmpForwards.timestamp != 0) && (tmpForwards.offsetModuleName != 0) && (tmpForwards.reserved != 0)){
     			tmpForwards.timestamp = readDWord(pefile, diskOffset, DWORD_Buffer);
     			tmpForwards.offsetModuleName = readWord(pefile, diskOffset+4, WORD_Buffer);

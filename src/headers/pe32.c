@@ -1160,6 +1160,10 @@ void parsePE32(FILE* pefile, struct switchList* psList){
     		
     		if(tmpBounds32.numberOfModuleForwarderRefs != 0){
     			struct IMAGE_BOUND_FORWARDER_REF tmpForwards32;
+                tmpForwards32.timestamp  = 1;
+                tmpForwards32.offsetModuleName = 1;
+                tmpForwards32.reserved = 1;
+
     			while((tmpForwards32.timestamp != 0) && (tmpForwards32.offsetModuleName != 0) && (tmpForwards32.reserved != 0)){
     				tmpForwards32.timestamp = readDWord(pefile, tmpDiskOffset, DWORD_Buffer);
     				tmpForwards32.offsetModuleName = readWord(pefile, tmpDiskOffset+4, WORD_Buffer);
