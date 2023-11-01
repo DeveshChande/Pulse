@@ -148,6 +148,23 @@ void initializeMSDOSHeader(struct IMAGE_DOS_HEADER* msDOSHeader){
     msDOSHeader->e_lfarlc = (uint16_t)0;
     msDOSHeader->e_ovno = (uint16_t)0;
 
+    size_t j=0;
+    for(size_t i=28;i<=34;i+=2){
+        msDOSHeader->e_res[j] = (uint16_t)0;
+        j++;
+    }
+
+    msDOSHeader->e_oemid = (uint16_t)0;
+    msDOSHeader->e_oeminfo = (uint16_t)0;
+    
+    j=0;
+    for(size_t i=40;i<=58;i+=2){
+        msDOSHeader->e_res2[j] = (uint16_t)0;
+        j++;
+    }
+
+    msDOSHeader->e_lfanew = (uint32_t)0;
+
 }
 
 void initializeCoffHeader(struct IMAGE_COFF_HEADER* coffHeader){
@@ -779,7 +796,6 @@ char* computeMD5Hash(FILE* pefile, char* md5HashValue){
     return md5HashValue;
 
 }
-
 
 char* computeSHA1Hash(FILE* pefile, char* sha1HashValue){
 

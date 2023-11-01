@@ -11,7 +11,8 @@
 #include "../src/headers/pe.c"
 #include "../src/headers/pe32.c"
 #include "../src/headers/pe64.c"
-#include "../tests/test_fileOperations.h"
+#include "../tests/test_fileOperations.c"
+#include "../tests/test_pe.c"
 
 #define OPTSTR "-:"
 
@@ -31,7 +32,13 @@ int main(int argc, char* argv[]){
         cmocka_unit_test(test_convert_DWORD_To_uint32_t),
         cmocka_unit_test(test_hexdigit2int),
         cmocka_unit_test(test_convert_uint64_t_ToString),
-        cmocka_unit_test(test_convertRelativeAddressToDiskOffset)
+        cmocka_unit_test(test_convertRelativeAddressToDiskOffset),
+        cmocka_unit_test(test_initializeMSDOSHeader),
+        cmocka_unit_test(test_initializeCoffHeader),
+        cmocka_unit_test(test_initializeSectionHeader),
+        cmocka_unit_test(test_initializeException),
+        cmocka_unit_test(test_initializeBaseReloc),
+        cmocka_unit_test(test_initializeDebug)
     };
     
     return cmocka_run_group_tests(tests, NULL, NULL);
@@ -177,6 +184,12 @@ int main(int argc, char* argv[]){
     fclose(pefile);
     free(psList);
     
+    int returnCode = system("strings /home/appdev/Downloads/testingFiles/pe32-notepad++.exe -n 10");
+    if (returnCode != 0){
+        printf("Error code: %d\n", returnCode);
+    }
+        
+
     t = clock() - t;
     double time_taken = ((double)t)/CLOCKS_PER_SEC;
     printf("\n\nParsing took %f seconds to execute.\n", time_taken);
