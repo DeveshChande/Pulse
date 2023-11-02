@@ -240,20 +240,20 @@ void parseMSDOSHeader(FILE* pefile, struct IMAGE_DOS_HEADER* msDOSHeader){
     uint32_t* DWORD_Buffer = calloc(4, sizeof(uint8_t));
     size_t j = 0;
 
-    msDOSHeader->e_magic = readWord(pefile, 2, WORD_Buffer);
-    msDOSHeader->e_cblp = readWord(pefile, 4, WORD_Buffer);
-    msDOSHeader->e_cp = readWord(pefile, 6, WORD_Buffer);
-    msDOSHeader->e_crlc = readWord(pefile, 9, WORD_Buffer);
-    msDOSHeader->e_cparhdr = readWord(pefile, 10, WORD_Buffer);
-    msDOSHeader->e_minalloc = readWord(pefile, 12, WORD_Buffer);
-    msDOSHeader->e_maxalloc = readWord(pefile, 14, WORD_Buffer);
-    msDOSHeader->e_ss = readWord(pefile, 16, WORD_Buffer);
-    msDOSHeader->e_sp = readWord(pefile, 18, WORD_Buffer);
-    msDOSHeader->e_csum = readWord(pefile, 20, WORD_Buffer);
-    msDOSHeader->e_ip = readWord(pefile, 22, WORD_Buffer);
-    msDOSHeader->e_cs = readWord(pefile, 24, WORD_Buffer);
-    msDOSHeader->e_lfarlc = readWord(pefile, 26, WORD_Buffer);
-    msDOSHeader->e_ovno = readWord(pefile, 28, WORD_Buffer);
+    msDOSHeader->e_magic = readWord(pefile, 0, WORD_Buffer);
+    msDOSHeader->e_cblp = readWord(pefile, 2, WORD_Buffer);
+    msDOSHeader->e_cp = readWord(pefile, 4, WORD_Buffer);
+    msDOSHeader->e_crlc = readWord(pefile, 6, WORD_Buffer);
+    msDOSHeader->e_cparhdr = readWord(pefile, 8, WORD_Buffer);
+    msDOSHeader->e_minalloc = readWord(pefile, 10, WORD_Buffer);
+    msDOSHeader->e_maxalloc = readWord(pefile, 12, WORD_Buffer);
+    msDOSHeader->e_ss = readWord(pefile, 14, WORD_Buffer);
+    msDOSHeader->e_sp = readWord(pefile, 16, WORD_Buffer);
+    msDOSHeader->e_csum = readWord(pefile, 18, WORD_Buffer);
+    msDOSHeader->e_ip = readWord(pefile, 20, WORD_Buffer);
+    msDOSHeader->e_cs = readWord(pefile, 22, WORD_Buffer);
+    msDOSHeader->e_lfarlc = readWord(pefile, 24, WORD_Buffer);
+    msDOSHeader->e_ovno = readWord(pefile, 26, WORD_Buffer);
     
     for(size_t i=28;i<=34;i+=2){
         msDOSHeader->e_res[j] = readWord(pefile, i, WORD_Buffer);
@@ -278,8 +278,10 @@ void parseMSDOSHeader(FILE* pefile, struct IMAGE_DOS_HEADER* msDOSHeader){
 void parseCoffHeader(FILE* file, uint32_t elfanew, struct IMAGE_COFF_HEADER* coffHeader){
     uint16_t* WORD_Buffer = calloc(2, sizeof(uint8_t));
     uint32_t* DWORD_Buffer = calloc(4, sizeof(uint8_t));
+    
 
     coffHeader->peSignature = readDWord(file, elfanew, DWORD_Buffer);
+    printf("Here.\n");
     coffHeader->machine = readWord(file, elfanew+4, WORD_Buffer);
     coffHeader->numberOfSections = readWord(file, elfanew+6, WORD_Buffer);
     coffHeader->timeDateStamp = readDWord(file, elfanew+8, DWORD_Buffer);

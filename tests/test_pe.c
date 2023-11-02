@@ -41,16 +41,11 @@ void test_initializeMSDOSHeader(void** state){
     assert_int_equal(msDOSHeader->e_ss, 0);
     assert_int_equal(msDOSHeader->e_sp, 0);
     assert_int_equal(msDOSHeader->e_csum, 0);
+    assert_int_equal(msDOSHeader->e_ip, 0);
     assert_int_equal(msDOSHeader->e_cs, 0);
     assert_int_equal(msDOSHeader->e_lfarlc, 0);
     assert_int_equal(msDOSHeader->e_ovno, 0);
-    assert_int_equal(msDOSHeader->e_magic, 0);
-    assert_int_equal(msDOSHeader->e_magic, 0);
-    assert_int_equal(msDOSHeader->e_magic, 0);
-    assert_int_equal(msDOSHeader->e_magic, 0);
-    assert_int_equal(msDOSHeader->e_magic, 0);
-    assert_int_equal(msDOSHeader->e_magic, 0);
-    assert_int_equal(msDOSHeader->e_magic, 0);
+    
 
     for(size_t i=0;i<4;i++){
         assert_int_equal(msDOSHeader->e_res[i], 0);
@@ -218,6 +213,140 @@ void test_initializeBoundImport(void** state){
     }
 
     free(bounds);
+    (void) state;
+}
+
+void test_parseMSDOSHeader(void** state){
+    
+    FILE* pefile = fopen("../tests/testFiles/pe32+-notepad++.exe", "rb");
+    if(pefile == NULL){
+        perror("Failed to open file.\n");
+    }
+
+    struct IMAGE_DOS_HEADER* msDOSHeader = malloc(sizeof(struct IMAGE_DOS_HEADER));
+
+    parseMSDOSHeader(pefile, msDOSHeader);
+
+    assert_int_equal(msDOSHeader->e_magic, 0x4d5a);
+    assert_int_equal(msDOSHeader->e_cblp, 0x9000);
+    assert_int_equal(msDOSHeader->e_cp, 0x300);
+    assert_int_equal(msDOSHeader->e_crlc, 0x00);
+    assert_int_equal(msDOSHeader->e_cparhdr, 0x400);
+    assert_int_equal(msDOSHeader->e_minalloc, 0x00);
+    assert_int_equal(msDOSHeader->e_maxalloc, 0xffff);
+    assert_int_equal(msDOSHeader->e_ss, 0x00);
+    assert_int_equal(msDOSHeader->e_sp, 0xb800);
+    assert_int_equal(msDOSHeader->e_csum, 0x00);
+    assert_int_equal(msDOSHeader->e_ip, 0x00);
+    assert_int_equal(msDOSHeader->e_cs, 0x00);
+    assert_int_equal(msDOSHeader->e_lfarlc, 0x4000);
+    assert_int_equal(msDOSHeader->e_ovno, 0x00);
+    assert_int_equal(msDOSHeader->e_oeminfo, 0x00);
+
+    for(size_t i=0;i<4;i++){
+        assert_int_equal(msDOSHeader->e_res[i], 0x00);
+    }
+
+    for(size_t i=0;i<10;i++){
+        assert_int_equal(msDOSHeader->e_res2[i], 0x00);
+    }
+
+    assert_int_equal(msDOSHeader->e_lfanew, 0x18010000);
+
+    free(msDOSHeader);
+    fclose(pefile);
+    (void) state;
+}
+
+void test_parseCoffHeader(void** state){
+
+    FILE* pefile = fopen("../tests/testFiles/pe32+-notepad++.exe", "rb");
+    if(pefile == NULL){
+        perror("Failed to open file.\n");
+    }
+
+    struct IMAGE_COFF_HEADER* coffHeader = malloc(sizeof(struct IMAGE_COFF_HEADER));
+    if(coffHeader == NULL){
+        perror("Failed to allocate memory for COFFHEADER.\n");
+    }
+
+    coffHeader->machineArchitecture = malloc(31 * sizeof(char));
+    if(coffHeader->machineArchitecture == NULL){
+    	perror("Failed to allocate memory for coffHeader->machineArchitecture structure");
+    	return;
+    }
+    
+    memcpy(coffHeader->machineArchitecture, "INITIALIZATION_VALUE", 21);
+    coffHeader->machineArchitecture[21] = '\0';
+
+    coffHeader->characteristicsList = malloc(17 * sizeof(char*));
+    if(coffHeader->characteristicsList == NULL){
+    	perror("Failed to allocate memory for coffHeader->characteristicsList structure");
+    	return;
+    }
+	
+    for(size_t i=0;i<17;i++){
+    	coffHeader->characteristicsList[i] = malloc(32 * sizeof(char));
+    	if(coffHeader->characteristicsList[i] == NULL){
+    		perror("Failed to allocate memory for coffHeader->characteristicsList structure");
+    		return;
+    	}
+    	memcpy(coffHeader->characteristicsList[i], "INITIALIZATION_VALUE", 21);
+        (coffHeader->characteristicsList[i])[21] = '\0';
+    }
+
+    parseCoffHeader(pefile, convert_DWORD_To_uint32_t(0x18010000), coffHeader);
+    
+    assert_int_equal(coffHeader->peSignature, 0x50450000);
+    assert_int_equal(coffHeader->machine, 0x6486);
+    assert_int_equal(coffHeader->numberOfSections, 0x700);
+    assert_int_equal(coffHeader->timeDateStamp, 0x1d7edb64);
+    assert_int_equal(coffHeader->pointerToSymbolTable, 0x0000);
+    assert_int_equal(coffHeader->numberOfSymbols, 0x0000);
+    assert_int_equal(coffHeader->sizeOfOptionalHeader, 0xf000);
+    assert_int_equal(coffHeader->characteristics, 0x2200);
+   
+    for(size_t i=0;i<17;i++){
+        free(coffHeader->characteristicsList[i]);
+    }
+
+    free(coffHeader->machineArchitecture);
+    free(coffHeader->characteristicsList);
+    free(coffHeader);
+    fclose(pefile);
+    (void) state;
+}
+
+void test_parseSectionHeaders(void** state){
+    FILE* pefile = fopen("../tests/testFiles/pe32+-notepad++.exe", "rb");
+    if(pefile == NULL){
+        perror("Failed to open file.\n");
+    }
+    
+    uint16_t numberOfSections = 0x07;
+    uint32_t memoryOffset = convert_DWORD_To_uint32_t(0x18010000) + 24 + convert_WORD_To_uint16_t(0xf000);
+    struct SECTION_HEADER* sectionHeader = malloc(numberOfSections * sizeof(struct SECTION_HEADER));
+    if(sectionHeader == NULL){
+    	perror("Failed to allocate memory for sectionHeader structure\n");
+    	return;
+    }
+
+    parseSectionHeaders(pefile, numberOfSections, memoryOffset, sectionHeader);
+
+    assert_int_equal(sectionHeader[0].name, 0x2e74657874000000);
+    assert_int_equal(sectionHeader[0].virtualSize, 0x48ad4200);
+    assert_int_equal(sectionHeader[0].virtualAddress, 0x100000);
+    assert_int_equal(sectionHeader[0].sizeOfRawData, 0xae4200);
+    assert_int_equal(sectionHeader[0].pointerToRawData, 0x40000);
+    assert_int_equal(sectionHeader[0].pointerToRelocations, 0x0000);
+    assert_int_equal(sectionHeader[0].pointerToLineNumbers, 0x0000);
+    assert_int_equal(sectionHeader[0].numberOfRelocations, 0x00);
+    assert_int_equal(sectionHeader[0].numberOfLineNumbers, 0x00);
+    assert_int_equal(sectionHeader[0].characteristics, 0x20000060);
+
+
+    free(sectionHeader);
+    fclose(pefile);
     (void) state;
 }
 

@@ -989,7 +989,7 @@ void parsePE64(FILE* pefile, struct switchList* psList){
     	
     	}
     	initializeException(exceptionCount, exception64);
-    	
+    	printf("diskoffset: %04x\texceptionCount: %zu\n", diskOffset, exceptionCount);
     	parseException(pefile, diskOffset, exceptionCount, exception64);
     	exceptionConsoleOutput(exceptionCount, exception64);
     	

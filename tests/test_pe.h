@@ -6,6 +6,10 @@ void test_initializeBaseReloc(void** state);
 void test_initializeDebug(void** state);
 void test_initializeBoundImport(void** state);
 
+void test_parseMSDOSHeader(void** state);
+void test_parseCoffHeader(void** state);
+void test_parseSectionHeaders(void** state);
+
 void test_computeMD5Hash(void** state);
 void test_computeSHA1Hash(void** state);
 void test_computeSHA256Hash(void** state);

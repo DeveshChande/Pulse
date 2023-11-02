@@ -677,12 +677,13 @@ void consoleOutput32(struct IMAGE_DOS_HEADER* msDOSHeader, struct IMAGE_COFF_HEA
     "msDOSHeader->e_ovno: 0x%02x\n"
     "msDOSHeader->e_res: 0x%02x%02x%02x%02x\n"
     "msDOSHeader->e_oemid: 0x%02x\n"
+    "msDOSHeader->e_oeminfo: 0x%02x\n"
     "msDOSHeader->e_res2: 0x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x\n"
     "msDOSHeader->e_lfanew: 0x%04x\n\n"
     ,msDOSHeader->e_magic, msDOSHeader->e_cblp, msDOSHeader->e_cp, msDOSHeader->e_crlc
     ,msDOSHeader->e_cparhdr, msDOSHeader->e_minalloc, msDOSHeader->e_maxalloc, msDOSHeader->e_ss
     ,msDOSHeader->e_sp, msDOSHeader->e_csum, msDOSHeader->e_ip, msDOSHeader->e_cs
-    ,msDOSHeader->e_lfarlc, msDOSHeader->e_ovno, msDOSHeader->e_res[0], msDOSHeader->e_res[1]
+    ,msDOSHeader->e_lfarlc, msDOSHeader->e_ovno, msDOSHeader->e_oeminfo, msDOSHeader->e_res[0], msDOSHeader->e_res[1]
     ,msDOSHeader->e_res[2], msDOSHeader->e_res[3], msDOSHeader->e_oemid, msDOSHeader->e_res2[0]
     ,msDOSHeader->e_res2[1], msDOSHeader->e_res2[2], msDOSHeader->e_res2[3], msDOSHeader->e_res2[4]
     ,msDOSHeader->e_res2[5], msDOSHeader->e_res2[6], msDOSHeader->e_res2[7], msDOSHeader->e_res2[8]
@@ -838,7 +839,6 @@ void parsePE32(FILE* pefile, struct switchList* psList){
     	}
     	memcpy(coffHeader->characteristicsList[i], "INITIALIZATION_VALUE", 21);
         (coffHeader->characteristicsList[i])[21] = '\0';
-        printf("Allocated string %zu\n", i);
     }
     	
     struct IMAGE_OPTIONAL_HEADER32* optionalHeader32 = malloc(sizeof(struct IMAGE_OPTIONAL_HEADER32));

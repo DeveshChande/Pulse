@@ -16,35 +16,16 @@
 
 #define OPTSTR "-:"
 
+int run_UnitTests(void);
+
 int main(int argc, char* argv[]){
 
     #ifdef DEBUG
-    const struct CMUnitTest tests[] = {
-    	cmocka_unit_test(test_reverse_endianess_uint8_t),
-    	cmocka_unit_test(test_reverse_endianess_uint16_t),
-    	cmocka_unit_test(test_reverse_endianess_uint32_t),
-    	cmocka_unit_test(test_reverse_endianess_uint64_t),
-        cmocka_unit_test(test_readByte),
-        cmocka_unit_test(test_readWord),
-        cmocka_unit_test(test_readDWord),
-        cmocka_unit_test(test_readQWord),
-        cmocka_unit_test(test_convert_WORD_To_uint16_t),
-        cmocka_unit_test(test_convert_DWORD_To_uint32_t),
-        cmocka_unit_test(test_hexdigit2int),
-        cmocka_unit_test(test_convert_uint64_t_ToString),
-        cmocka_unit_test(test_convertRelativeAddressToDiskOffset),
-        cmocka_unit_test(test_initializeMSDOSHeader),
-        cmocka_unit_test(test_initializeCoffHeader),
-        cmocka_unit_test(test_initializeSectionHeader),
-        cmocka_unit_test(test_initializeException),
-        cmocka_unit_test(test_initializeBaseReloc),
-        cmocka_unit_test(test_initializeDebug),
-        cmocka_unit_test(test_computeMD5Hash),
-        cmocka_unit_test(test_computeSHA1Hash),
-        cmocka_unit_test(test_computeSHA256Hash)
-    };
-    
-    return cmocka_run_group_tests(tests, NULL, NULL);
+    int failedTests = run_UnitTests();
+    if(!failedTests){
+        printf("Failed number of tests: %d\n", failedTests);
+    } 
+    exit(EXIT_SUCCESS);
     #endif
     
     int opt_index = 0;
@@ -195,4 +176,36 @@ int main(int argc, char* argv[]){
     (void) argv;
 
     exit(EXIT_SUCCESS);
+}
+
+int run_UnitTests(void){
+    const struct CMUnitTest tests[] = {
+    	cmocka_unit_test(test_reverse_endianess_uint8_t),
+    	cmocka_unit_test(test_reverse_endianess_uint16_t),
+    	cmocka_unit_test(test_reverse_endianess_uint32_t),
+    	cmocka_unit_test(test_reverse_endianess_uint64_t),
+        cmocka_unit_test(test_readByte),
+        cmocka_unit_test(test_readWord),
+        cmocka_unit_test(test_readDWord),
+        cmocka_unit_test(test_readQWord),
+        cmocka_unit_test(test_convert_WORD_To_uint16_t),
+        cmocka_unit_test(test_convert_DWORD_To_uint32_t),
+        cmocka_unit_test(test_hexdigit2int),
+        cmocka_unit_test(test_convert_uint64_t_ToString),
+        cmocka_unit_test(test_convertRelativeAddressToDiskOffset),
+        cmocka_unit_test(test_initializeMSDOSHeader),
+        cmocka_unit_test(test_initializeCoffHeader),
+        cmocka_unit_test(test_initializeSectionHeader),
+        cmocka_unit_test(test_initializeException),
+        cmocka_unit_test(test_initializeBaseReloc),
+        cmocka_unit_test(test_initializeDebug),
+        cmocka_unit_test(test_parseMSDOSHeader),
+        cmocka_unit_test(test_parseCoffHeader),
+        cmocka_unit_test(test_parseSectionHeaders),
+        cmocka_unit_test(test_computeMD5Hash),
+        cmocka_unit_test(test_computeSHA1Hash),
+        cmocka_unit_test(test_computeSHA256Hash)
+    };
+    
+    return cmocka_run_group_tests(tests, NULL, NULL);
 }
