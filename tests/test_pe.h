@@ -5,3 +5,7 @@ void test_initializeException(void** state);
 void test_initializeBaseReloc(void** state);
 void test_initializeDebug(void** state);
 void test_initializeBoundImport(void** state);
+
+void test_computeMD5Hash(void** state);
+void test_computeSHA1Hash(void** state);
+void test_computeSHA256Hash(void** state);

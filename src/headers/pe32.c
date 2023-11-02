@@ -1228,12 +1228,8 @@ void parsePE32(FILE* pefile, struct switchList* psList){
     	free(sha256HashValue);
     }
     	
-    for(size_t i=0;i<17;i++){
-        printf("String value: %s\n", coffHeader->characteristicsList[i]);
-    }
     
     for(size_t i=0;i<17;i++){
-        printf("Freeing string %zu\n", i);
         free(coffHeader->characteristicsList[i]);
     }
     	

@@ -220,3 +220,141 @@ void test_initializeBoundImport(void** state){
     free(bounds);
     (void) state;
 }
+
+void test_computeMD5Hash(void** state){
+    
+    FILE* pefile = fopen("../tests/testFiles/pe32+-notepad++.exe", "rb");
+	if(pefile == NULL){
+		perror("Failed to open file. Verify whether the file exists or not.\n");
+	}
+
+    char* md5HashValue = malloc(33 * sizeof(char));
+    size_t n=0;
+    char md5buff[4096];
+    unsigned char md5digestValue[EVP_MAX_MD_SIZE];
+    unsigned int md5digestLength;
+    fseek(pefile, 0, SEEK_SET);
+    
+    EVP_MD_CTX* md5mdctx = EVP_MD_CTX_new();
+    if(md5mdctx == NULL){
+    	perror("Failed to configure library context");
+    }
+    
+    EVP_DigestInit_ex(md5mdctx, EVP_md5(), NULL);
+    while ((n = fread(md5buff, 1, sizeof(md5buff), pefile)))
+    {
+            EVP_DigestUpdate(md5mdctx, md5buff, n);
+    }
+    
+    EVP_DigestFinal_ex(md5mdctx, md5digestValue, &md5digestLength);
+    
+    size_t j=0;
+    for (size_t i = 0; i < md5digestLength; i++)
+    {
+    	    char tmp[3] = {0};
+    	    sprintf(tmp, "%02x", md5digestValue[i]);
+    	    tmp[2] = '\0';
+            md5HashValue[j++] = tmp[0];
+            md5HashValue[j++] = tmp[1];
+    }
+    
+    md5HashValue[32] = '\0';
+    EVP_MD_CTX_free(md5mdctx);
+    assert_string_equal(md5HashValue, "d07bed882cabe550a82cec0030d26226");
+    
+    free(md5HashValue);
+    (void) state;
+}
+
+void test_computeSHA1Hash(void** state){
+
+    FILE* pefile = fopen("../tests/testFiles/pe32+-notepad++.exe", "rb");
+	if(pefile == NULL){
+		perror("Failed to open file. Verify whether the file exists or not.\n");
+	}
+
+    char* sha1HashValue = malloc(41 * sizeof(char));
+
+    size_t n=0;
+    char sha1buff[4096];
+    unsigned char sha1digestValue[EVP_MAX_MD_SIZE];
+    unsigned int sha1digestLength;
+    fseek(pefile, 0, SEEK_SET);
+    
+    EVP_MD_CTX* sha1mdctx = EVP_MD_CTX_new();
+    if(sha1mdctx == NULL){
+    	perror("Failed to configure library context");
+    }
+    
+    EVP_DigestInit_ex(sha1mdctx, EVP_sha1(), NULL);
+    while ((n = fread(sha1buff, 1, sizeof(sha1buff), pefile)))
+    {
+            EVP_DigestUpdate(sha1mdctx, sha1buff, n);
+    }
+    
+    EVP_DigestFinal_ex(sha1mdctx, sha1digestValue, &sha1digestLength);
+
+    size_t j=0;
+    for (size_t i = 0; i < sha1digestLength; i++)
+    {
+    	    char tmp[3] = {0};
+    	    sprintf(tmp, "%02x", sha1digestValue[i]);
+    	    tmp[2] = '\0';
+            sha1HashValue[j++] = tmp[0];
+            sha1HashValue[j++] = tmp[1];
+    }
+    
+    sha1HashValue[40] = '\0';
+    EVP_MD_CTX_free(sha1mdctx);
+    assert_string_equal(sha1HashValue, "b67e9cdce640132a4b8961e5734ddb64d7cefdc5");
+    
+    free(sha1HashValue);
+    (void) state;
+}
+
+void test_computeSHA256Hash(void** state){
+
+    FILE* pefile = fopen("../tests/testFiles/pe32+-notepad++.exe", "rb");
+	if(pefile == NULL){
+		perror("Failed to open file. Verify whether the file exists or not.\n");
+	}
+
+    char* sha256HashValue = malloc(65 * sizeof(char));
+
+    size_t n=0;
+    char sha256buff[4096];
+    unsigned char sha256digestValue[EVP_MAX_MD_SIZE];
+    unsigned int sha256digestLength;
+    fseek(pefile, 0, SEEK_SET);
+    
+    EVP_MD_CTX* sha256mdctx = EVP_MD_CTX_new();
+    if(sha256mdctx == NULL){
+    	perror("Failed to configure library context");
+    }
+    
+    EVP_DigestInit_ex(sha256mdctx, EVP_sha256(), NULL);
+    while ((n = fread(sha256buff, 1, sizeof(sha256buff), pefile)))
+    {
+            EVP_DigestUpdate(sha256mdctx, sha256buff, n);
+    }
+    
+    EVP_DigestFinal_ex(sha256mdctx, sha256digestValue, &sha256digestLength);
+   
+    size_t j=0;
+    for (size_t i = 0; i < sha256digestLength; i++)
+    {
+    	    char tmp[3] = {0};
+    	    sprintf(tmp, "%02x", sha256digestValue[i]);
+    	    tmp[2] = '\0';
+            sha256HashValue[j++] = tmp[0];
+            sha256HashValue[j++] = tmp[1];
+    }
+    sha256HashValue[64] = '\0';
+    EVP_MD_CTX_free(sha256mdctx);
+    assert_string_equal(sha256HashValue, "674815647a6b7ccb1ea6747f3823db035d78d4237430bd102890703ba9cf7195");
+    
+    free(sha256HashValue);
+    (void) state;
+}
+
+ 

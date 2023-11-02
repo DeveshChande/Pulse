@@ -38,7 +38,10 @@ int main(int argc, char* argv[]){
         cmocka_unit_test(test_initializeSectionHeader),
         cmocka_unit_test(test_initializeException),
         cmocka_unit_test(test_initializeBaseReloc),
-        cmocka_unit_test(test_initializeDebug)
+        cmocka_unit_test(test_initializeDebug),
+        cmocka_unit_test(test_computeMD5Hash),
+        cmocka_unit_test(test_computeSHA1Hash),
+        cmocka_unit_test(test_computeSHA256Hash)
     };
     
     return cmocka_run_group_tests(tests, NULL, NULL);
@@ -182,13 +185,7 @@ int main(int argc, char* argv[]){
     }
     
     fclose(pefile);
-    free(psList);
-    
-    int returnCode = system("strings /home/appdev/Downloads/testingFiles/pe32-notepad++.exe -n 10");
-    if (returnCode != 0){
-        printf("Error code: %d\n", returnCode);
-    }
-        
+    free(psList); 
 
     t = clock() - t;
     double time_taken = ((double)t)/CLOCKS_PER_SEC;
