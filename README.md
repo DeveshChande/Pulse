@@ -1,4 +1,5 @@
 # Sakizuke
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/3ca57fc1b5484ff6af2465dab2e07eb1)](https://app.codacy.com/gh/DeveshChande/Sakizuke/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 Sakizuke is a utility for parsing Portable Executables, written in C.
 
